@@ -3,7 +3,6 @@ import { Pressable, Text, View } from 'react-native';
 
 import type { Budget } from '@/components/budgets/types';
 
-import { formatTransactionAmount } from './data';
 import { transactionStyles as styles } from './styles';
 import type { Transaction } from './types';
 
@@ -26,6 +25,7 @@ export function TransactionList({
         transactions.map((transaction) => {
           const budget = budgets.find((item) => item.id === transaction.budgetId);
           const category = budget?.categories.find((item) => item.id === transaction.categoryId);
+          const isIncome = category?.type === 'Przychód';
 
           return (
             <View key={transaction.id} style={styles.transactionRow}>
@@ -50,9 +50,10 @@ export function TransactionList({
               <Text
                 style={[
                   styles.transactionAmount,
-                  transaction.amount > 0 ? styles.positiveAmount : null,
+                  isIncome ? styles.positiveAmount : null,
                 ]}>
-                {formatTransactionAmount(transaction.amount, transaction.currency)}
+                {isIncome ? '+' : '-'}
+                {transaction.amount.toLocaleString('pl-PL')} {transaction.currency}
               </Text>
               <Pressable
                 hitSlop={10}

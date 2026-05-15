@@ -141,14 +141,11 @@ export function TransactionFormScreen({
 
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Kwota</Text>
-              <Text style={styles.helperText}>
-                Użyj wartości ujemnej dla wydatku, np. -120.
-              </Text>
               <TextInput
                 inputMode="decimal"
                 keyboardType="decimal-pad"
                 onChangeText={onChangeAmount}
-                placeholder="np. -120"
+                placeholder="np. 120"
                 placeholderTextColor="#8D9994"
                 style={[styles.input, error ? styles.inputError : null]}
                 value={amount}

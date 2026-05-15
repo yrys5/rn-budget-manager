@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { initialBudgets } from '@/components/budgets/data';
 import type { Currency } from '@/components/budgets/types';
-import { currentUserId, formatTransactionAmount, initialTransactions } from '@/components/transactions/data';
+import { currentUserId, initialTransactions } from '@/components/transactions/data';
 import { transactionStyles as styles } from '@/components/transactions/styles';
 import { TransactionFormScreen } from '@/components/transactions/TransactionFormScreen';
 import { TransactionList } from '@/components/transactions/TransactionList';
@@ -29,7 +29,13 @@ export default function TransactionsScreen() {
     [editingTransactionId, transactions],
   );
 
-  const monthTotal = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const monthTotal = transactions.reduce((sum, transaction) => {
+    const budget = initialBudgets.find((item) => item.id === transaction.budgetId);
+    const category = budget?.categories.find((item) => item.id === transaction.categoryId);
+    const signedAmount = category?.type === 'Przychód' ? transaction.amount : -transaction.amount;
+
+    return sum + signedAmount;
+  }, 0);
 
   const resetTransactionForm = () => {
     setAmount('');
@@ -80,8 +86,8 @@ export default function TransactionsScreen() {
   const handleSaveTransaction = () => {
     const normalizedAmount = Number(amount.replace(',', '.'));
 
-    if (!Number.isFinite(normalizedAmount) || normalizedAmount === 0) {
-      setError('Kwota transakcji musi być różna od zera.');
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      setError('Kwota transakcji musi być większa od zera.');
       return;
     }
 
@@ -185,7 +191,10 @@ export default function TransactionsScreen() {
 
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Suma widocznych transakcji</Text>
-          <Text style={styles.summaryValue}>{formatTransactionAmount(monthTotal, 'PLN')}</Text>
+          <Text style={styles.summaryValue}>
+            {monthTotal > 0 ? '+' : ''}
+            {monthTotal.toLocaleString('pl-PL')} PLN
+          </Text>
         </View>
 
         <TransactionList

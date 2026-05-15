@@ -5,7 +5,7 @@ export const currentUserId = 'user-demo-1';
 export const initialTransactions: Transaction[] = [
   {
     id: 'transaction-food-1',
-    amount: -184,
+    amount: 184,
     description: 'Zakupy spożywcze',
     transactionDate: '2026-05-14',
     createdAt: '2026-05-14T17:20:00.000Z',
@@ -16,7 +16,7 @@ export const initialTransactions: Transaction[] = [
   },
   {
     id: 'transaction-bills-1',
-    amount: -320,
+    amount: 320,
     description: 'Prąd i gaz',
     transactionDate: '2026-05-10',
     createdAt: '2026-05-10T09:30:00.000Z',
@@ -27,7 +27,7 @@ export const initialTransactions: Transaction[] = [
   },
   {
     id: 'transaction-travel-1',
-    amount: -120,
+    amount: 120,
     description: 'Bilety kolejowe',
     transactionDate: '2026-05-08',
     createdAt: '2026-05-08T12:10:00.000Z',
@@ -36,10 +36,15 @@ export const initialTransactions: Transaction[] = [
     categoryId: 'travel',
     currency: 'PLN',
   },
+  {
+    id: 'transaction-salary-1',
+    amount: 5800,
+    description: 'Wynagrodzenie',
+    transactionDate: '2026-05-01',
+    createdAt: '2026-05-01T08:00:00.000Z',
+    budgetId: 'home',
+    userId: currentUserId,
+    categoryId: 'salary',
+    currency: 'PLN',
+  },
 ];
-
-export const formatTransactionAmount = (amount: number, currency: string) => {
-  const prefix = amount > 0 ? '+' : '';
-
-  return `${prefix}${amount.toLocaleString('pl-PL')} ${currency}`;
-};
