@@ -3,37 +3,135 @@ import type { ComponentProps } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { formatCurrency, getMonthLabel, initialBudgets } from '@/components/budgets/data';
+import type { Budget, Category } from '@/components/budgets/types';
+import {
+  initialFamilies,
+  initialFamilyBudgets,
+  initialFamilyMembers,
+  initialUsers,
+} from '@/components/family/data';
+import { initialGoals } from '@/components/goals/data';
+import { initialTransactions } from '@/components/transactions/data';
+import type { Transaction } from '@/components/transactions/types';
+
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const budgets = [
-  { name: 'Domowy', amount: '4 280 zł', active: true },
-  { name: 'Wakacje', amount: '1 850 zł', active: false },
-  { name: 'Rodzina', amount: '6 120 zł', active: false },
+const currentMonth = 5;
+const currentYear = 2026;
+
+const quickStats: { label: string; icon: IconName; value: string }[] = [
+  { label: 'Budżety', icon: 'wallet-outline', value: `${initialBudgets.length}` },
+  { label: 'Transakcje', icon: 'swap-horizontal-outline', value: `${initialTransactions.length}` },
+  { label: 'Cele', icon: 'flag-outline', value: `${initialGoals.length}` },
+  { label: 'Rodziny', icon: 'people-outline', value: `${initialFamilies.length}` },
 ];
 
-const quickActions: { label: string; icon: IconName }[] = [
-  { label: 'Budżet', icon: 'wallet-outline' },
-  { label: 'Transakcja', icon: 'swap-horizontal-outline' },
-  { label: 'Limit', icon: 'speedometer-outline' },
-  { label: 'Cel', icon: 'flag-outline' },
-];
+const findCategory = (transaction: Transaction) => {
+  const budget = initialBudgets.find((item) => item.id === transaction.budgetId);
+  const category = budget?.categories.find((item) => item.id === transaction.categoryId);
 
-const transactions: { title: string; category: string; amount: string; icon: IconName }[] = [
-  { title: 'Zakupy spożywcze', category: 'Jedzenie', amount: '-184 zł', icon: 'cart-outline' },
-  { title: 'Wynagrodzenie', category: 'Przychody', amount: '+5 800 zł', icon: 'cash-outline' },
-  { title: 'Netflix', category: 'Subskrypcje', amount: '-43 zł', icon: 'play-circle-outline' },
-];
+  return { budget, category };
+};
 
-const limits = [
-  { name: 'Jedzenie', value: '72%', color: '#1D8E62' },
-  { name: 'Rozrywka', value: '48%', color: '#D89D26' },
-  { name: 'Transport', value: '31%', color: '#466B8F' },
-];
+const formatSignedCurrency = (value: number) => {
+  const prefix = value > 0 ? '+' : value < 0 ? '-' : '';
+  return `${prefix}${Math.abs(value).toLocaleString('pl-PL')} PLN`;
+};
 
-const goals = [
-  { name: 'Poduszka finansowa', saved: '8 400 zł', progress: '56%' },
-  { name: 'Nowy laptop', saved: '2 100 zł', progress: '42%' },
-];
+const getBudgetUsage = (budget: Budget) =>
+  budget.limit > 0 ? Math.min(Math.round((budget.spent / budget.limit) * 100), 100) : 0;
+
+const getGoalProgress = (currentAmount: number, targetAmount: number) =>
+  targetAmount > 0 ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100) : 0;
+
+const getCategorySpend = (budgetId: string, category: Category) =>
+  initialTransactions
+    .filter((transaction) => {
+      const isCurrentPeriod = transaction.transactionDate.startsWith(
+        `${currentYear}-${`${currentMonth}`.padStart(2, '0')}`,
+      );
+
+      return (
+        isCurrentPeriod &&
+        transaction.budgetId === budgetId &&
+        transaction.categoryId === category.id &&
+        category.type === 'Wydatek'
+      );
+    })
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+const monthTransactions = initialTransactions.filter((transaction) =>
+  transaction.transactionDate.startsWith(`${currentYear}-${`${currentMonth}`.padStart(2, '0')}`),
+);
+
+const monthBalance = monthTransactions.reduce((sum, transaction) => {
+  const { category } = findCategory(transaction);
+  const signedAmount = category?.type === 'Przychód' ? transaction.amount : -transaction.amount;
+
+  return sum + signedAmount;
+}, 0);
+
+const monthExpenses = monthTransactions.reduce((sum, transaction) => {
+  const { category } = findCategory(transaction);
+
+  return category?.type === 'Wydatek' ? sum + transaction.amount : sum;
+}, 0);
+
+const totalBalance = initialBudgets.reduce((sum, budget) => sum + budget.balance, 0);
+const totalSpent = initialBudgets.reduce((sum, budget) => sum + budget.spent, 0);
+const totalLimit = initialBudgets.reduce((sum, budget) => sum + budget.limit, 0);
+const totalUsage = totalLimit > 0 ? Math.min(Math.round((totalSpent / totalLimit) * 100), 100) : 0;
+const totalGoalTarget = initialGoals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+const totalGoalSaved = initialGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+const goalsProgress = getGoalProgress(totalGoalSaved, totalGoalTarget);
+const pulseScore = Math.round((100 - totalUsage) * 0.45 + goalsProgress * 0.35 + 20);
+const pulseLabel = pulseScore >= 75 ? 'Spokojny rytm' : pulseScore >= 55 ? 'Pod kontrolą' : 'Wymaga uwagi';
+
+const limitInsights = initialBudgets
+  .flatMap((budget) =>
+    budget.limits.map((limit) => {
+      const category = budget.categories.find((item) => item.id === limit.categoryId);
+      const spent = category ? getCategorySpend(budget.id, category) : 0;
+      const progress =
+        limit.limitAmount > 0 ? Math.min(Math.round((spent / limit.limitAmount) * 100), 100) : 0;
+
+      return {
+        id: limit.id,
+        budgetName: budget.name,
+        category,
+        limit,
+        progress,
+        spent,
+      };
+    }),
+  )
+  .sort((firstLimit, secondLimit) => secondLimit.progress - firstLimit.progress)
+  .slice(0, 3);
+
+const latestTransactions = initialTransactions
+  .slice()
+  .sort((firstTransaction, secondTransaction) =>
+    secondTransaction.transactionDate.localeCompare(firstTransaction.transactionDate),
+  )
+  .slice(0, 3);
+
+const nearestGoals = initialGoals
+  .slice()
+  .sort((firstGoal, secondGoal) => firstGoal.targetDate.localeCompare(secondGoal.targetDate))
+  .slice(0, 2);
+
+const primaryFamily = initialFamilies[0];
+const primaryFamilyMembers = initialFamilyMembers.filter(
+  (member) => member.familyId === primaryFamily.id,
+);
+const primaryFamilyBudgets = initialFamilyBudgets.filter(
+  (familyBudget) => familyBudget.familyId === primaryFamily.id,
+);
+const familyMemberNames = primaryFamilyMembers
+  .map((member) => initialUsers.find((user) => user.id === member.userId)?.username)
+  .filter((username): username is string => Boolean(username))
+  .join(', ');
 
 export default function DashboardScreen() {
   return (
@@ -42,81 +140,124 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.eyebrow}>Dzień dobry</Text>
-            <Text style={styles.title}>Twój pulpit</Text>
+            <Text style={styles.title}>Pulpit finansów</Text>
           </View>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>MK</Text>
           </View>
         </View>
 
-        <View style={styles.budgetStrip}>
-          {budgets.map((budget) => (
-            <View
-              key={budget.name}
-              style={[styles.budgetPill, budget.active ? styles.budgetPillActive : null]}>
-              <Text style={[styles.budgetName, budget.active ? styles.budgetNameActive : null]}>
-                {budget.name}
-              </Text>
-              <Text style={[styles.budgetAmount, budget.active ? styles.budgetAmountActive : null]}>
-                {budget.amount}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.summaryCard}>
+        <View style={styles.pulseCard}>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.sectionLabel}>Budżet Domowy</Text>
-              <Text style={styles.balance}>4 280 zł</Text>
+              <Text style={styles.sectionLabel}>Puls finansów</Text>
+              <Text style={styles.pulseTitle}>{pulseLabel}</Text>
             </View>
-            <View style={styles.headerIcon}>
-              <Ionicons name="analytics-outline" size={24} color="#157348" />
+            <View style={styles.pulseScore}>
+              <Text style={styles.pulseScoreText}>{pulseScore}</Text>
             </View>
           </View>
 
-          <View style={styles.progressTrack}>
-            <View style={styles.progressFill} />
-          </View>
+          <View style={styles.pulseRows}>
+            <View style={styles.pulseRow}>
+              <Text style={styles.pulseLabel}>Wykorzystanie budżetów</Text>
+              <Text style={styles.pulseValue}>{totalUsage}%</Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${totalUsage}%` }]} />
+            </View>
 
-          <View style={styles.summaryStats}>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Wydane</Text>
-              <Text style={styles.statValue}>3 120 zł</Text>
+            <View style={styles.pulseRow}>
+              <Text style={styles.pulseLabel}>Postęp celów</Text>
+              <Text style={styles.pulseValue}>{goalsProgress}%</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Limit</Text>
-              <Text style={styles.statValue}>7 400 zł</Text>
+            <View style={styles.progressTrack}>
+              <View style={[styles.goalProgressFill, { width: `${goalsProgress}%` }]} />
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Okres</Text>
-              <Text style={styles.statValue}>Maj</Text>
-            </View>
+          </View>
+        </View>
+
+        <View style={styles.summaryGrid}>
+          <View style={styles.summaryTile}>
+            <Text style={styles.summaryLabel}>Saldo budżetów</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(totalBalance)}</Text>
+          </View>
+          <View style={styles.summaryTile}>
+            <Text style={styles.summaryLabel}>{getMonthLabel(currentMonth)} {currentYear}</Text>
+            <Text style={[styles.summaryValue, monthBalance >= 0 ? styles.positiveAmount : null]}>
+              {formatSignedCurrency(monthBalance)}
+            </Text>
           </View>
         </View>
 
         <View style={styles.quickGrid}>
-          {quickActions.map((action) => (
-            <View key={action.label} style={styles.quickAction}>
+          {quickStats.map((stat) => (
+            <View key={stat.label} style={styles.quickAction}>
               <View style={styles.quickIcon}>
-                <Ionicons name={action.icon} size={22} color="#10251F" />
+                <Ionicons name={stat.icon} size={21} color="#10251F" />
               </View>
-              <Text style={styles.quickText}>{action.label}</Text>
+              <Text style={styles.quickValue}>{stat.value}</Text>
+              <Text style={styles.quickText}>{stat.label}</Text>
             </View>
           ))}
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Limity kategorii</Text>
-            <Text style={styles.sectionAction}>Edytuj</Text>
+            <Text style={styles.sectionTitle}>Budżety</Text>
+            <Text style={styles.sectionAction}>{formatCurrency(monthExpenses)} wydatków</Text>
+          </View>
+          <View style={styles.budgetList}>
+            {initialBudgets.map((budget) => {
+              const usage = getBudgetUsage(budget);
+
+              return (
+                <View key={budget.id} style={styles.budgetRow}>
+                  <View style={styles.budgetHeader}>
+                    <View>
+                      <Text style={styles.budgetName}>{budget.name}</Text>
+                      <Text style={styles.budgetMeta}>
+                        {formatCurrency(budget.spent)} z {formatCurrency(budget.limit)}
+                      </Text>
+                    </View>
+                    <Text style={styles.budgetUsage}>{usage}%</Text>
+                  </View>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${usage}%` }]} />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Limity warte uwagi</Text>
+            <Text style={styles.sectionAction}>Maj</Text>
           </View>
           <View style={styles.limitList}>
-            {limits.map((limit) => (
-              <View key={limit.name} style={styles.limitRow}>
-                <View style={[styles.limitDot, { backgroundColor: limit.color }]} />
-                <Text style={styles.limitName}>{limit.name}</Text>
-                <Text style={styles.limitValue}>{limit.value}</Text>
+            {limitInsights.map(({ budgetName, category, id, limit, progress, spent }) => (
+              <View key={id} style={styles.limitRow}>
+                <View
+                  style={[
+                    styles.limitIcon,
+                    { backgroundColor: `${category?.color ?? '#66736E'}1A` },
+                  ]}>
+                  <Ionicons
+                    name={category?.icon ?? 'speedometer-outline'}
+                    size={20}
+                    color={category?.color ?? '#66736E'}
+                  />
+                </View>
+                <View style={styles.limitCopy}>
+                  <Text style={styles.limitName}>{category?.name ?? 'Kategoria'}</Text>
+                  <Text style={styles.limitMeta}>
+                    {budgetName} · {spent.toLocaleString('pl-PL')} z{' '}
+                    {limit.limitAmount.toLocaleString('pl-PL')} {limit.currency}
+                  </Text>
+                </View>
+                <Text style={styles.limitValue}>{progress}%</Text>
               </View>
             ))}
           </View>
@@ -125,27 +266,39 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Ostatnie transakcje</Text>
-            <Text style={styles.sectionAction}>Wszystkie</Text>
+            <Text style={styles.sectionAction}>Najnowsze</Text>
           </View>
           <View style={styles.listCard}>
-            {transactions.map((transaction) => (
-              <View key={transaction.title} style={styles.transactionRow}>
-                <View style={styles.transactionIcon}>
-                  <Ionicons name={transaction.icon} size={21} color="#40534B" />
+            {latestTransactions.map((transaction) => {
+              const { budget, category } = findCategory(transaction);
+              const isIncome = category?.type === 'Przychód';
+
+              return (
+                <View key={transaction.id} style={styles.transactionRow}>
+                  <View
+                    style={[
+                      styles.transactionIcon,
+                      { backgroundColor: `${category?.color ?? '#66736E'}1A` },
+                    ]}>
+                    <Ionicons
+                      name={category?.icon ?? 'swap-horizontal-outline'}
+                      size={21}
+                      color={category?.color ?? '#66736E'}
+                    />
+                  </View>
+                  <View style={styles.transactionCopy}>
+                    <Text style={styles.transactionTitle}>{transaction.description}</Text>
+                    <Text style={styles.transactionCategory}>
+                      {budget?.name ?? 'Budżet'} · {category?.name ?? 'Kategoria'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.transactionAmount, isIncome ? styles.positiveAmount : null]}>
+                    {isIncome ? '+' : '-'}
+                    {transaction.amount.toLocaleString('pl-PL')} {transaction.currency}
+                  </Text>
                 </View>
-                <View style={styles.transactionCopy}>
-                  <Text style={styles.transactionTitle}>{transaction.title}</Text>
-                  <Text style={styles.transactionCategory}>{transaction.category}</Text>
-                </View>
-                <Text
-                  style={[
-                    styles.transactionAmount,
-                    transaction.amount.startsWith('+') ? styles.positiveAmount : null,
-                  ]}>
-                  {transaction.amount}
-                </Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
 
@@ -153,16 +306,24 @@ export default function DashboardScreen() {
           <View style={styles.smallCard}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Cele</Text>
-              <Ionicons name="add-circle-outline" size={22} color="#157348" />
+              <Ionicons name="flag-outline" size={22} color="#157348" />
             </View>
-            {goals.map((goal) => (
-              <View key={goal.name} style={styles.goalItem}>
-                <Text style={styles.goalName}>{goal.name}</Text>
-                <Text style={styles.goalMeta}>
-                  {goal.saved} · {goal.progress}
-                </Text>
-              </View>
-            ))}
+            {nearestGoals.map((goal) => {
+              const progress = getGoalProgress(goal.currentAmount, goal.targetAmount);
+
+              return (
+                <View key={goal.id} style={styles.goalItem}>
+                  <View style={styles.goalHeader}>
+                    <Text style={styles.goalName}>{goal.name}</Text>
+                    <Text style={styles.goalPercent}>{progress}%</Text>
+                  </View>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.goalProgressFill, { width: `${progress}%` }]} />
+                  </View>
+                  <Text style={styles.goalMeta}>do {goal.targetDate}</Text>
+                </View>
+              );
+            })}
           </View>
 
           <View style={styles.smallCard}>
@@ -170,8 +331,9 @@ export default function DashboardScreen() {
               <Text style={styles.sectionTitle}>Rodzina</Text>
               <Ionicons name="people-outline" size={22} color="#157348" />
             </View>
-            <Text style={styles.familyCount}>4 członków</Text>
-            <Text style={styles.familyMeta}>Anna, Marek, Ola i Ty</Text>
+            <Text style={styles.familyCount}>{primaryFamilyMembers.length} członków</Text>
+            <Text style={styles.familyMeta}>{familyMemberNames}</Text>
+            <Text style={styles.familyMeta}>{primaryFamilyBudgets.length} powiązane budżety</Text>
           </View>
         </View>
       </ScrollView>
@@ -186,8 +348,9 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 20,
+    paddingBottom: 32,
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingTop: 24,
   },
   header: {
     alignItems: 'center',
@@ -203,10 +366,10 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#10251F',
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '800',
     letterSpacing: 0,
-    lineHeight: 38,
+    lineHeight: 36,
   },
   avatar: {
     alignItems: 'center',
@@ -221,45 +384,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
-  budgetStrip: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  budgetPill: {
+  pulseCard: {
     backgroundColor: '#FFFFFF',
     borderColor: '#DAE5DF',
     borderRadius: 8,
     borderWidth: 1,
-    flex: 1,
-    gap: 4,
-    padding: 12,
-  },
-  budgetPillActive: {
-    backgroundColor: '#10251F',
-    borderColor: '#10251F',
-  },
-  budgetName: {
-    color: '#66736E',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  budgetNameActive: {
-    color: '#C9D8D1',
-  },
-  budgetAmount: {
-    color: '#243A33',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  budgetAmountActive: {
-    color: '#FFFFFF',
-  },
-  summaryCard: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DAE5DF',
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 16,
+    gap: 18,
     padding: 18,
     shadowColor: '#244035',
     shadowOffset: { width: 0, height: 12 },
@@ -276,20 +406,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  balance: {
+  pulseTitle: {
     color: '#10251F',
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: '800',
     letterSpacing: 0,
-    lineHeight: 42,
+    lineHeight: 38,
   },
-  headerIcon: {
+  pulseScore: {
     alignItems: 'center',
     backgroundColor: '#E6F6EE',
     borderRadius: 8,
-    height: 46,
+    height: 56,
     justifyContent: 'center',
-    width: 46,
+    width: 56,
+  },
+  pulseScoreText: {
+    color: '#0E2A21',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  pulseRows: {
+    gap: 9,
+  },
+  pulseRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  pulseLabel: {
+    color: '#66736E',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  pulseValue: {
+    color: '#243A33',
+    fontSize: 13,
+    fontWeight: '800',
   },
   progressTrack: {
     backgroundColor: '#DBE4DF',
@@ -301,27 +454,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D8E62',
     borderRadius: 999,
     height: '100%',
-    width: '58%',
   },
-  summaryStats: {
+  goalProgressFill: {
+    backgroundColor: '#526E9E',
+    borderRadius: 999,
+    height: '100%',
+  },
+  summaryGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
-  statBox: {
-    backgroundColor: '#F7FAF8',
+  summaryTile: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#DAE5DF',
     borderRadius: 8,
+    borderWidth: 1,
     flex: 1,
-    gap: 4,
-    padding: 10,
+    gap: 6,
+    padding: 14,
   },
-  statLabel: {
+  summaryLabel: {
     color: '#66736E',
     fontSize: 12,
+    fontWeight: '700',
   },
-  statValue: {
-    color: '#243A33',
-    fontSize: 14,
+  summaryValue: {
+    color: '#10251F',
+    fontSize: 20,
     fontWeight: '800',
+    letterSpacing: 0,
   },
   quickGrid: {
     flexDirection: 'row',
@@ -334,21 +495,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
-    gap: 8,
-    minHeight: 86,
+    gap: 5,
+    minHeight: 92,
     padding: 10,
   },
   quickIcon: {
     alignItems: 'center',
     backgroundColor: '#F0F5F2',
     borderRadius: 8,
-    height: 38,
+    height: 36,
     justifyContent: 'center',
-    width: 38,
+    width: 36,
+  },
+  quickValue: {
+    color: '#10251F',
+    fontSize: 16,
+    fontWeight: '800',
   },
   quickText: {
-    color: '#243A33',
-    fontSize: 12,
+    color: '#66736E',
+    fontSize: 11,
     fontWeight: '800',
     textAlign: 'center',
   },
@@ -367,6 +533,37 @@ const styles = StyleSheet.create({
   },
   sectionAction: {
     color: '#157348',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  budgetList: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#DAE5DF',
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 14,
+    padding: 14,
+  },
+  budgetRow: {
+    gap: 8,
+  },
+  budgetHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  budgetName: {
+    color: '#243A33',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  budgetMeta: {
+    color: '#66736E',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  budgetUsage: {
+    color: '#10251F',
     fontSize: 14,
     fontWeight: '800',
   },
@@ -375,24 +572,33 @@ const styles = StyleSheet.create({
     borderColor: '#DAE5DF',
     borderRadius: 8,
     borderWidth: 1,
-    padding: 14,
+    paddingHorizontal: 14,
   },
   limitRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    minHeight: 36,
+    gap: 12,
+    minHeight: 72,
   },
-  limitDot: {
-    borderRadius: 999,
-    height: 10,
-    marginRight: 10,
-    width: 10,
+  limitIcon: {
+    alignItems: 'center',
+    borderRadius: 8,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
+  },
+  limitCopy: {
+    flex: 1,
   },
   limitName: {
-    color: '#40534B',
-    flex: 1,
+    color: '#243A33',
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  limitMeta: {
+    color: '#66736E',
+    fontSize: 12,
+    marginTop: 2,
   },
   limitValue: {
     color: '#10251F',
@@ -414,7 +620,6 @@ const styles = StyleSheet.create({
   },
   transactionIcon: {
     alignItems: 'center',
-    backgroundColor: '#F0F5F2',
     borderRadius: 8,
     height: 42,
     justifyContent: 'center',
@@ -452,20 +657,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     gap: 12,
-    minHeight: 146,
+    minHeight: 176,
     padding: 14,
   },
   goalItem: {
-    gap: 3,
+    gap: 7,
+  },
+  goalHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'space-between',
   },
   goalName: {
     color: '#243A33',
+    flex: 1,
     fontSize: 14,
+    fontWeight: '800',
+  },
+  goalPercent: {
+    color: '#526E9E',
+    fontSize: 13,
     fontWeight: '800',
   },
   goalMeta: {
     color: '#66736E',
-    fontSize: 13,
+    fontSize: 12,
   },
   familyCount: {
     color: '#243A33',
