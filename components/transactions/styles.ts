@@ -64,6 +64,18 @@ export const transactionStyles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 14,
   },
+  transactionSections: {
+    gap: 18,
+  },
+  transactionSection: {
+    gap: 8,
+  },
+  monthHeader: {
+    color: '#40534B',
+    fontSize: 15,
+    fontWeight: '800',
+    textTransform: 'capitalize',
+  },
   transactionRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -97,12 +109,6 @@ export const transactionStyles = StyleSheet.create({
   },
   positiveAmount: {
     color: '#157348',
-  },
-  editButton: {
-    alignItems: 'center',
-    height: 34,
-    justifyContent: 'center',
-    width: 34,
   },
   emptyState: {
     alignItems: 'center',
