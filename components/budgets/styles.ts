@@ -270,6 +270,55 @@ export const budgetStyles = StyleSheet.create({
     justifyContent: 'center',
     width: 34,
   },
+  limitList: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#DAE5DF',
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+  },
+  limitRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 78,
+  },
+  limitIcon: {
+    alignItems: 'center',
+    borderRadius: 8,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
+  },
+  limitCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  limitName: {
+    color: '#243A33',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  limitMeta: {
+    color: '#66736E',
+    fontSize: 13,
+  },
+  limitAmount: {
+    color: '#10251F',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  limitProgressTrack: {
+    backgroundColor: '#DBE4DF',
+    borderRadius: 999,
+    height: 5,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  limitProgressFill: {
+    borderRadius: 999,
+    height: '100%',
+  },
   emptyState: {
     alignItems: 'center',
     gap: 8,
@@ -351,6 +400,71 @@ export const budgetStyles = StyleSheet.create({
     color: '#66736E',
     fontSize: 13,
     lineHeight: 19,
+  },
+  selectList: {
+    gap: 10,
+  },
+  selectButton: {
+    alignItems: 'center',
+    backgroundColor: '#F7FAF8',
+    borderColor: '#DAE5DF',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    minHeight: 52,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  selectButtonActive: {
+    backgroundColor: '#10251F',
+    borderColor: '#10251F',
+  },
+  selectButtonCopy: {
+    flex: 1,
+  },
+  selectButtonText: {
+    color: '#243A33',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  selectButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  selectButtonMeta: {
+    color: '#66736E',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  selectButtonMetaActive: {
+    color: '#C9D8D1',
+  },
+  compactGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  compactOption: {
+    alignItems: 'center',
+    backgroundColor: '#F7FAF8',
+    borderColor: '#DAE5DF',
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 42,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  compactOptionActive: {
+    backgroundColor: '#10251F',
+    borderColor: '#10251F',
+  },
+  compactOptionText: {
+    color: '#40534B',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  compactOptionTextActive: {
+    color: '#FFFFFF',
   },
   input: {
     backgroundColor: '#FFFFFF',

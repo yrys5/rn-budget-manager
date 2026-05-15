@@ -1,4 +1,4 @@
-import type { Budget, CategoryTypeOption } from './types';
+import type { Budget, CategoryTypeOption, Currency } from './types';
 
 export const categoryTypes: CategoryTypeOption[] = [
   { label: 'Jedzenie', icon: 'restaurant-outline', color: '#1D8E62' },
@@ -26,7 +26,6 @@ export const initialBudgets: Budget[] = [
         id: 'food',
         name: 'Zakupy spożywcze',
         type: 'Jedzenie',
-        amount: 1240,
         icon: 'restaurant-outline',
         color: '#1D8E62',
       },
@@ -34,7 +33,6 @@ export const initialBudgets: Budget[] = [
         id: 'bills',
         name: 'Opłaty mieszkaniowe',
         type: 'Mieszkanie/dom',
-        amount: 980,
         icon: 'home-outline',
         color: '#466B8F',
       },
@@ -42,9 +40,30 @@ export const initialBudgets: Budget[] = [
         id: 'fun',
         name: 'Weekend',
         type: 'Rozrywka',
-        amount: 420,
         icon: 'game-controller-outline',
         color: '#D89D26',
+      },
+    ],
+    limits: [
+      {
+        id: 'limit-food-may',
+        limitAmount: 1700,
+        periodYear: 2026,
+        periodMonth: 5,
+        createdAt: '2026-05-01T08:00:00.000Z',
+        budgetId: 'home',
+        categoryId: 'food',
+        currency: 'PLN',
+      },
+      {
+        id: 'limit-fun-may',
+        limitAmount: 850,
+        periodYear: 2026,
+        periodMonth: 5,
+        createdAt: '2026-05-01T08:10:00.000Z',
+        budgetId: 'home',
+        categoryId: 'fun',
+        currency: 'PLN',
       },
     ],
   },
@@ -59,7 +78,6 @@ export const initialBudgets: Budget[] = [
         id: 'travel',
         name: 'Dojazdy',
         type: 'Transport',
-        amount: 320,
         icon: 'car-outline',
         color: '#526E9E',
       },
@@ -67,9 +85,20 @@ export const initialBudgets: Budget[] = [
         id: 'hotel',
         name: 'Apartament',
         type: 'Mieszkanie/dom',
-        amount: 330,
         icon: 'home-outline',
         color: '#466B8F',
+      },
+    ],
+    limits: [
+      {
+        id: 'limit-travel-may',
+        limitAmount: 900,
+        periodYear: 2026,
+        periodMonth: 5,
+        createdAt: '2026-05-02T09:00:00.000Z',
+        budgetId: 'holidays',
+        categoryId: 'travel',
+        currency: 'PLN',
       },
     ],
   },
@@ -84,7 +113,6 @@ export const initialBudgets: Budget[] = [
         id: 'school',
         name: 'Kieszonkowe',
         type: 'Osobiste wydatki',
-        amount: 760,
         icon: 'person-outline',
         color: '#6E7681',
       },
@@ -92,7 +120,6 @@ export const initialBudgets: Budget[] = [
         id: 'health',
         name: 'Lekarz i apteka',
         type: 'Opieka zdrowotna',
-        amount: 540,
         icon: 'medical-outline',
         color: '#C45A5A',
       },
@@ -100,12 +127,46 @@ export const initialBudgets: Budget[] = [
         id: 'house',
         name: 'Dom',
         type: 'Mieszkanie/dom',
-        amount: 1080,
         icon: 'home-outline',
         color: '#466B8F',
+      },
+    ],
+    limits: [
+      {
+        id: 'limit-health-may',
+        limitAmount: 1000,
+        periodYear: 2026,
+        periodMonth: 5,
+        createdAt: '2026-05-03T10:00:00.000Z',
+        budgetId: 'family',
+        categoryId: 'health',
+        currency: 'PLN',
       },
     ],
   },
 ];
 
 export const formatCurrency = (value: number) => `${value.toLocaleString('pl-PL')} zł`;
+
+export const currencies: Currency[] = ['PLN', 'EUR', 'USD'];
+
+export const months = [
+  { value: 1, label: 'Styczeń' },
+  { value: 2, label: 'Luty' },
+  { value: 3, label: 'Marzec' },
+  { value: 4, label: 'Kwiecień' },
+  { value: 5, label: 'Maj' },
+  { value: 6, label: 'Czerwiec' },
+  { value: 7, label: 'Lipiec' },
+  { value: 8, label: 'Sierpień' },
+  { value: 9, label: 'Wrzesień' },
+  { value: 10, label: 'Październik' },
+  { value: 11, label: 'Listopad' },
+  { value: 12, label: 'Grudzień' },
+];
+
+export const formatLimitCurrency = (value: number, currency: Currency) =>
+  `${value.toLocaleString('pl-PL')} ${currency}`;
+
+export const getMonthLabel = (month: number) =>
+  months.find((monthOption) => monthOption.value === month)?.label ?? `${month}`;

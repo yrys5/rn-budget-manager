@@ -8,13 +8,18 @@ import { BudgetList } from '@/components/budgets/BudgetList';
 import { BudgetSummary } from '@/components/budgets/BudgetSummary';
 import { CategoryFormScreen } from '@/components/budgets/CategoryFormScreen';
 import { CategoryList } from '@/components/budgets/CategoryList';
+import { LimitFormScreen } from '@/components/budgets/LimitFormScreen';
+import { LimitList } from '@/components/budgets/LimitList';
 import { categoryTypes, initialBudgets } from '@/components/budgets/data';
 import { budgetStyles as styles } from '@/components/budgets/styles';
 import type {
   Budget,
+  BudgetLimit,
   Category,
   CategoryScreenMode,
   CategoryTypeOption,
+  Currency,
+  LimitScreenMode,
 } from '@/components/budgets/types';
 
 export default function BudgetsScreen() {
@@ -22,6 +27,7 @@ export default function BudgetsScreen() {
   const [activeBudgetId, setActiveBudgetId] = useState(initialBudgets[0].id);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [categoryScreenMode, setCategoryScreenMode] = useState<CategoryScreenMode>(null);
+  const [limitScreenMode, setLimitScreenMode] = useState<LimitScreenMode>(null);
   const [budgetName, setBudgetName] = useState('');
   const [categoryName, setCategoryName] = useState('');
   const [selectedCategoryType, setSelectedCategoryType] = useState<CategoryTypeOption>(
@@ -29,8 +35,16 @@ export default function BudgetsScreen() {
   );
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [categoryToDeleteId, setCategoryToDeleteId] = useState<string | null>(null);
+  const [limitAmount, setLimitAmount] = useState('');
+  const [limitPeriodYear, setLimitPeriodYear] = useState('2026');
+  const [limitPeriodMonth, setLimitPeriodMonth] = useState(5);
+  const [limitCurrency, setLimitCurrency] = useState<Currency>('PLN');
+  const [selectedLimitCategoryId, setSelectedLimitCategoryId] = useState<string | null>(null);
+  const [editingLimitId, setEditingLimitId] = useState<string | null>(null);
+  const [limitToDeleteId, setLimitToDeleteId] = useState<string | null>(null);
   const [nameError, setNameError] = useState('');
   const [categoryError, setCategoryError] = useState('');
+  const [limitError, setLimitError] = useState('');
 
   const activeBudget = useMemo(
     () => budgets.find((budget) => budget.id === activeBudgetId) ?? budgets[0],
@@ -40,6 +54,11 @@ export default function BudgetsScreen() {
   const editingCategory = useMemo(
     () => activeBudget?.categories.find((category) => category.id === editingCategoryId),
     [activeBudget, editingCategoryId],
+  );
+
+  const editingLimit = useMemo(
+    () => activeBudget?.limits.find((limit) => limit.id === editingLimitId),
+    [activeBudget, editingLimitId],
   );
 
   const spentPercent =
@@ -68,6 +87,7 @@ export default function BudgetsScreen() {
       spent: 0,
       limit: 0,
       categories: [],
+      limits: [],
     };
 
     setBudgets((currentBudgets) => [nextBudget, ...currentBudgets]);
@@ -134,7 +154,6 @@ export default function BudgetsScreen() {
       id: editingCategoryId ?? `${Date.now()}`,
       name: nextName,
       type: selectedCategoryType.label,
-      amount: 0,
       icon: selectedCategoryType.icon,
       color: selectedCategoryType.color,
     };
@@ -149,9 +168,7 @@ export default function BudgetsScreen() {
           return {
             ...budget,
             categories: budget.categories.map((category) =>
-              category.id === editingCategoryId
-                ? { ...category, ...nextCategory, amount: category.amount }
-                : category,
+              category.id === editingCategoryId ? { ...category, ...nextCategory } : category,
             ),
           };
         }
@@ -173,6 +190,7 @@ export default function BudgetsScreen() {
           ? {
               ...budget,
               categories: budget.categories.filter((category) => category.id !== categoryId),
+              limits: budget.limits.filter((limit) => limit.categoryId !== categoryId),
             }
           : budget,
       ),
@@ -183,6 +201,116 @@ export default function BudgetsScreen() {
   const handleConfirmDeleteCategory = () => {
     if (categoryToDeleteId) {
       handleDeleteCategory(categoryToDeleteId);
+    }
+  };
+
+  const resetLimitForm = () => {
+    setLimitAmount('');
+    setLimitError('');
+    setLimitPeriodYear('2026');
+    setLimitPeriodMonth(5);
+    setLimitCurrency('PLN');
+    setSelectedLimitCategoryId(null);
+    setEditingLimitId(null);
+    setLimitToDeleteId(null);
+    setLimitScreenMode(null);
+  };
+
+  const openCreateLimitScreen = () => {
+    setLimitAmount('');
+    setLimitError('');
+    setLimitPeriodYear('2026');
+    setLimitPeriodMonth(5);
+    setLimitCurrency('PLN');
+    setSelectedLimitCategoryId(activeBudget?.categories[0]?.id ?? null);
+    setEditingLimitId(null);
+    setLimitToDeleteId(null);
+    setLimitScreenMode('create');
+  };
+
+  const openEditLimitScreen = (limit: BudgetLimit) => {
+    setLimitAmount(`${limit.limitAmount}`);
+    setLimitError('');
+    setLimitPeriodYear(`${limit.periodYear}`);
+    setLimitPeriodMonth(limit.periodMonth);
+    setLimitCurrency(limit.currency);
+    setSelectedLimitCategoryId(limit.categoryId);
+    setEditingLimitId(limit.id);
+    setLimitToDeleteId(null);
+    setLimitScreenMode('edit');
+  };
+
+  const handleSaveLimit = () => {
+    if (!activeBudget) {
+      return;
+    }
+
+    const normalizedAmount = Number(limitAmount.replace(',', '.'));
+    const normalizedYear = Number(limitPeriodYear);
+
+    if (!selectedLimitCategoryId) {
+      setLimitError('Dodaj lub wybierz kategorię dla limitu.');
+      return;
+    }
+
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      setLimitError('Kwota limitu musi być większa od zera.');
+      return;
+    }
+
+    if (!Number.isInteger(normalizedYear) || normalizedYear < 2000) {
+      setLimitError('Podaj poprawny rok limitu.');
+      return;
+    }
+
+    const nextLimit: BudgetLimit = {
+      id: editingLimitId ?? `${Date.now()}`,
+      limitAmount: normalizedAmount,
+      periodYear: normalizedYear,
+      periodMonth: limitPeriodMonth,
+      createdAt: editingLimit?.createdAt ?? new Date().toISOString(),
+      budgetId: activeBudget.id,
+      categoryId: selectedLimitCategoryId,
+      currency: limitCurrency,
+    };
+
+    setBudgets((currentBudgets) =>
+      currentBudgets.map((budget) => {
+        if (budget.id !== activeBudget.id) {
+          return budget;
+        }
+
+        if (editingLimitId) {
+          return {
+            ...budget,
+            limits: budget.limits.map((limit) => (limit.id === editingLimitId ? nextLimit : limit)),
+          };
+        }
+
+        return { ...budget, limits: [nextLimit, ...budget.limits] };
+      }),
+    );
+    resetLimitForm();
+  };
+
+  const handleDeleteLimit = (limitId: string) => {
+    if (!activeBudget) {
+      return;
+    }
+
+    setBudgets((currentBudgets) =>
+      currentBudgets.map((budget) =>
+        budget.id === activeBudget.id
+          ? { ...budget, limits: budget.limits.filter((limit) => limit.id !== limitId) }
+          : budget,
+      ),
+    );
+    resetLimitForm();
+  };
+
+  const handleConfirmDeleteLimit = () => {
+    if (limitToDeleteId) {
+      handleDeleteLimit(limitToDeleteId);
     }
   };
 
@@ -208,6 +336,37 @@ export default function BudgetsScreen() {
         onSaveCategory={handleSaveCategory}
         onSelectCategoryType={setSelectedCategoryType}
         selectedCategoryType={selectedCategoryType}
+      />
+    );
+  }
+
+  if (limitScreenMode && activeBudget) {
+    return (
+      <LimitFormScreen
+        amount={limitAmount}
+        budget={activeBudget}
+        error={limitError}
+        hasEditingLimit={Boolean(editingLimit)}
+        limitScreenMode={limitScreenMode}
+        limitToDeleteId={limitToDeleteId}
+        onBack={resetLimitForm}
+        onCancelDelete={() => setLimitToDeleteId(null)}
+        onChangeAmount={setLimitAmount}
+        onChangeYear={setLimitPeriodYear}
+        onConfirmDelete={handleConfirmDeleteLimit}
+        onRequestDelete={() => {
+          if (editingLimit) {
+            setLimitToDeleteId(editingLimit.id);
+          }
+        }}
+        onSaveLimit={handleSaveLimit}
+        onSelectCategory={setSelectedLimitCategoryId}
+        onSelectCurrency={setLimitCurrency}
+        onSelectMonth={setLimitPeriodMonth}
+        periodMonth={limitPeriodMonth}
+        periodYear={limitPeriodYear}
+        selectedCategoryId={selectedLimitCategoryId ?? ''}
+        selectedCurrency={limitCurrency}
       />
     );
   }
@@ -244,6 +403,12 @@ export default function BudgetsScreen() {
               budget={activeBudget}
               onCreateCategory={openCreateCategoryScreen}
               onEditCategory={openEditCategoryScreen}
+            />
+
+            <LimitList
+              budget={activeBudget}
+              onCreateLimit={openCreateLimitScreen}
+              onEditLimit={openEditLimitScreen}
             />
           </>
         ) : null}

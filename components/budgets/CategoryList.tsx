@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 
-import { formatCurrency } from './data';
 import { budgetStyles as styles } from './styles';
 import type { Budget, Category } from './types';
 
@@ -33,7 +32,6 @@ export function CategoryList({ budget, onCreateCategory, onEditCategory }: Categ
                 <Text style={styles.categoryName}>{category.name}</Text>
                 <Text style={styles.categoryMeta}>{category.type}</Text>
               </View>
-              <Text style={styles.categoryAmount}>{formatCurrency(category.amount)}</Text>
               <Pressable
                 hitSlop={10}
                 onPress={() => onEditCategory(category)}
