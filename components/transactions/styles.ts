@@ -194,6 +194,22 @@ export const transactionStyles = StyleSheet.create({
   inputError: {
     borderColor: '#C64747',
   },
+  dateButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#DAE5DF',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    minHeight: 56,
+    paddingHorizontal: 15,
+  },
+  dateButtonText: {
+    color: '#142720',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   errorText: {
     color: '#B73E3E',
     fontSize: 13,
@@ -311,6 +327,18 @@ export const transactionStyles = StyleSheet.create({
     gap: 12,
     padding: 20,
     width: '100%',
+  },
+  datePickerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    gap: 16,
+    padding: 20,
+    width: '100%',
+  },
+  datePickerHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   confirmIcon: {
     alignItems: 'center',
