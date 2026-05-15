@@ -1,203 +1,63 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type FormErrors = Partial<Record<'username' | 'email' | 'password' | 'terms', string>>;
-
-export default function RegisterScreen() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const passwordStrength = useMemo(() => {
-    let score = 0;
-
-    if (password.length >= 8) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-
-    return score;
-  }, [password]);
-
-  const validateForm = () => {
-    const nextErrors: FormErrors = {};
-
-    if (username.trim().length < 3) {
-      nextErrors.username = 'Username musi mieć minimum 3 znaki.';
-    }
-
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
-      nextErrors.email = 'Podaj poprawny adres email.';
-    }
-
-    if (password.length < 8) {
-      nextErrors.password = 'Hasło musi mieć minimum 8 znaków.';
-    }
-
-    if (!acceptedTerms) {
-      nextErrors.terms = 'Akceptacja regulaminu jest wymagana.';
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const handleCreateAccount = () => {
-    setIsSubmitted(false);
-
-    if (validateForm()) {
-      setIsSubmitted(true);
-    }
-  };
-
+export default function WelcomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <View style={styles.brandMark}>
-              <Ionicons name="wallet-outline" size={30} color="#0E2A21" />
-            </View>
+      <View style={styles.content}>
+        <View style={styles.hero}>
+          <View style={styles.brandMark}>
+            <Ionicons name="wallet-outline" size={34} color="#0E2A21" />
+          </View>
+
+          <View style={styles.copy}>
             <Text style={styles.eyebrow}>Budget Manager</Text>
-            <Text style={styles.title}>Utwórz konto</Text>
+            <Text style={styles.title}>Twoje finanse pod ręką</Text>
             <Text style={styles.subtitle}>
-              Zacznij porządkować swoje finanse w jednym, spokojnym miejscu.
+              Planuj wydatki, kontroluj budżet i wracaj do swoich celów wtedy, kiedy ich
+              potrzebujesz.
             </Text>
           </View>
+        </View>
 
-          <View style={styles.form}>
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Username</Text>
-              <View style={[styles.inputWrap, errors.username ? styles.inputError : null]}>
-                <Ionicons name="person-outline" size={20} color="#66736E" />
-                <TextInput
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onChangeText={setUsername}
-                  placeholder="np. kasia_nowak"
-                  placeholderTextColor="#8D9994"
-                  returnKeyType="next"
-                  style={styles.input}
-                  value={username}
-                />
-              </View>
-              {errors.username ? <Text style={styles.errorText}>{errors.username}</Text> : null}
+        <View style={styles.previewPanel}>
+          <View style={styles.previewHeader}>
+            <Text style={styles.previewTitle}>Saldo miesiąca</Text>
+            <Ionicons name="trending-up-outline" size={22} color="#157348" />
+          </View>
+          <Text style={styles.balance}>4 280 zł</Text>
+          <View style={styles.progressTrack}>
+            <View style={styles.progressFill} />
+          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Wydatki</Text>
+              <Text style={styles.statValue}>1 240 zł</Text>
             </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Email</Text>
-              <View style={[styles.inputWrap, errors.email ? styles.inputError : null]}>
-                <Ionicons name="mail-outline" size={20} color="#66736E" />
-                <TextInput
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  inputMode="email"
-                  keyboardType="email-address"
-                  onChangeText={setEmail}
-                  placeholder="twoj@email.com"
-                  placeholderTextColor="#8D9994"
-                  returnKeyType="next"
-                  style={styles.input}
-                  value={email}
-                />
-              </View>
-              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
-            </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Hasło</Text>
-              <View style={[styles.inputWrap, errors.password ? styles.inputError : null]}>
-                <Ionicons name="lock-closed-outline" size={20} color="#66736E" />
-                <TextInput
-                  autoCapitalize="none"
-                  onChangeText={setPassword}
-                  placeholder="Minimum 8 znaków"
-                  placeholderTextColor="#8D9994"
-                  returnKeyType="done"
-                  secureTextEntry={!showPassword}
-                  style={styles.input}
-                  value={password}
-                />
-                <Pressable
-                  accessibilityLabel={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
-                  hitSlop={10}
-                  onPress={() => setShowPassword((value) => !value)}
-                  style={styles.iconButton}>
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={21}
-                    color="#42534C"
-                  />
-                </Pressable>
-              </View>
-              <View style={styles.strengthTrack}>
-                {[0, 1, 2].map((level) => (
-                  <View
-                    key={level}
-                    style={[
-                      styles.strengthSegment,
-                      passwordStrength > level ? styles.strengthSegmentActive : null,
-                    ]}
-                  />
-                ))}
-              </View>
-              {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-            </View>
-
-            <Pressable
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: acceptedTerms }}
-              onPress={() => setAcceptedTerms((value) => !value)}
-              style={styles.termsRow}>
-              <View style={[styles.checkbox, acceptedTerms ? styles.checkboxChecked : null]}>
-                {acceptedTerms ? <Ionicons name="checkmark" size={16} color="#FFFFFF" /> : null}
-              </View>
-              <Text style={styles.termsText}>
-                Akceptuję regulamin oraz zasady przetwarzania danych.
-              </Text>
-            </Pressable>
-            {errors.terms ? <Text style={styles.errorText}>{errors.terms}</Text> : null}
-
-            {isSubmitted ? (
-              <View style={styles.successBox}>
-                <Ionicons name="checkmark-circle" size={20} color="#157348" />
-                <Text style={styles.successText}>Formularz jest gotowy do podpięcia backendu.</Text>
-              </View>
-            ) : null}
-
-            <Pressable onPress={handleCreateAccount} style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Zarejestruj się</Text>
-              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-            </Pressable>
-
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Masz już konto?</Text>
-              <Pressable>
-                <Text style={styles.footerLink}>Zaloguj się</Text>
-              </Pressable>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Cel</Text>
+              <Text style={styles.statValue}>68%</Text>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+
+        <View style={styles.actions}>
+          <Link href="/login" asChild>
+            <Pressable style={styles.primaryButton}>
+              <Text style={styles.primaryButtonText}>Zaloguj się</Text>
+              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+            </Pressable>
+          </Link>
+
+          <Link href="/register" asChild>
+            <Pressable style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Utwórz konto</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -207,150 +67,109 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7FAF8',
   },
-  keyboardView: {
-    flex: 1,
-  },
   content: {
-    flexGrow: 1,
-    justifyContent: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
-  header: {
-    marginBottom: 30,
+  hero: {
+    gap: 28,
   },
   brandMark: {
     alignItems: 'center',
     backgroundColor: '#D9F2E4',
     borderRadius: 8,
-    height: 56,
+    height: 64,
     justifyContent: 'center',
-    marginBottom: 18,
-    width: 56,
+    width: 64,
+  },
+  copy: {
+    gap: 10,
   },
   eyebrow: {
     color: '#527469',
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0,
-    marginBottom: 8,
     textTransform: 'uppercase',
   },
   title: {
     color: '#10251F',
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: '800',
     letterSpacing: 0,
-    lineHeight: 40,
+    lineHeight: 44,
+    maxWidth: 360,
   },
   subtitle: {
     color: '#5D6B66',
     fontSize: 16,
     lineHeight: 23,
-    marginTop: 10,
-    maxWidth: 360,
+    maxWidth: 370,
   },
-  form: {
-    gap: 18,
-  },
-  fieldGroup: {
-    gap: 8,
-  },
-  label: {
-    color: '#243A33',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  inputWrap: {
-    alignItems: 'center',
+  previewPanel: {
     backgroundColor: '#FFFFFF',
     borderColor: '#DAE5DF',
     borderRadius: 8,
     borderWidth: 1,
-    flexDirection: 'row',
-    gap: 10,
-    minHeight: 56,
-    paddingHorizontal: 15,
+    gap: 14,
+    padding: 18,
     shadowColor: '#244035',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
   },
-  inputError: {
-    borderColor: '#C64747',
-  },
-  input: {
-    color: '#142720',
-    flex: 1,
-    fontSize: 16,
-    minHeight: 54,
-  },
-  iconButton: {
+  previewHeader: {
     alignItems: 'center',
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  },
-  errorText: {
-    color: '#B73E3E',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  strengthTrack: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 2,
+    justifyContent: 'space-between',
   },
-  strengthSegment: {
+  previewTitle: {
+    color: '#40534B',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  balance: {
+    color: '#10251F',
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: 0,
+  },
+  progressTrack: {
     backgroundColor: '#DBE4DF',
     borderRadius: 999,
-    flex: 1,
-    height: 5,
+    height: 8,
+    overflow: 'hidden',
   },
-  strengthSegmentActive: {
+  progressFill: {
     backgroundColor: '#1D8E62',
+    borderRadius: 999,
+    height: '100%',
+    width: '68%',
   },
-  termsRow: {
-    alignItems: 'flex-start',
+  statsRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 2,
   },
-  checkbox: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#A9B8B1',
-    borderRadius: 6,
-    borderWidth: 1.5,
-    height: 24,
-    justifyContent: 'center',
-    width: 24,
-  },
-  checkboxChecked: {
-    backgroundColor: '#157348',
-    borderColor: '#157348',
-  },
-  termsText: {
-    color: '#40534B',
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  successBox: {
-    alignItems: 'center',
-    backgroundColor: '#E6F6EE',
-    borderColor: '#BFE5CF',
+  statItem: {
+    backgroundColor: '#F7FAF8',
     borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 8,
+    flex: 1,
+    gap: 4,
     padding: 12,
   },
-  successText: {
-    color: '#155E3D',
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 19,
+  statLabel: {
+    color: '#66736E',
+    fontSize: 13,
+  },
+  statValue: {
+    color: '#243A33',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  actions: {
+    gap: 12,
   },
   primaryButton: {
     alignItems: 'center',
@@ -367,19 +186,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
   },
-  footerRow: {
+  secondaryButton: {
     alignItems: 'center',
-    flexDirection: 'row',
-    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#C9D8D1',
+    borderRadius: 8,
+    borderWidth: 1,
     justifyContent: 'center',
+    minHeight: 56,
+    paddingHorizontal: 18,
   },
-  footerText: {
-    color: '#66736E',
-    fontSize: 14,
-  },
-  footerLink: {
-    color: '#157348',
-    fontSize: 14,
+  secondaryButtonText: {
+    color: '#10251F',
+    fontSize: 16,
     fontWeight: '800',
   },
 });
