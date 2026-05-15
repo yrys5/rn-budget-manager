@@ -1,4 +1,4 @@
-import type { Family, FamilyMember, User } from './types';
+import type { Family, FamilyBudget, FamilyMember, User } from './types';
 
 export const currentUserId = 'user-demo-1';
 
@@ -50,4 +50,10 @@ export const initialFamilyMembers: FamilyMember[] = [
   { id: 'member-home-ola', familyId: 'family-home', userId: 'user-ola' },
   { id: 'member-vacation-marek', familyId: 'family-vacation', userId: currentUserId },
   { id: 'member-vacation-piotr', familyId: 'family-vacation', userId: 'user-piotr' },
+];
+
+export const initialFamilyBudgets: FamilyBudget[] = [
+  { id: 'family-budget-home-home', familyId: 'family-home', budgetId: 'home' },
+  { id: 'family-budget-home-family', familyId: 'family-home', budgetId: 'family' },
+  { id: 'family-budget-vacation-holidays', familyId: 'family-vacation', budgetId: 'holidays' },
 ];

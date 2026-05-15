@@ -4,12 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMemo, useState } from 'react';
 
 import { AddMemberModal } from '@/components/family/AddMemberModal';
+import { FamilyBudgetsList } from '@/components/family/FamilyBudgetsList';
 import { FamilyList } from '@/components/family/FamilyList';
 import { FamilyMembersList } from '@/components/family/FamilyMembersList';
 import { FamilyModal } from '@/components/family/FamilyModal';
+import { initialBudgets } from '@/components/budgets/data';
 import {
   currentUserId,
   initialFamilies,
+  initialFamilyBudgets,
   initialFamilyMembers,
   initialUsers,
 } from '@/components/family/data';
@@ -18,10 +21,12 @@ import type { Family, FamilyScreenMode } from '@/components/family/types';
 
 export default function FamilyScreen() {
   const [families, setFamilies] = useState(initialFamilies);
+  const [familyBudgets, setFamilyBudgets] = useState(initialFamilyBudgets);
   const [members, setMembers] = useState(initialFamilyMembers);
   const [activeFamilyId, setActiveFamilyId] = useState(initialFamilies[0].id);
   const [familyScreenMode, setFamilyScreenMode] = useState<FamilyScreenMode>(null);
   const [familyName, setFamilyName] = useState('');
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
   const [familyError, setFamilyError] = useState('');
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [familyToDeleteId, setFamilyToDeleteId] = useState<string | null>(null);
@@ -32,15 +37,20 @@ export default function FamilyScreen() {
   );
 
   const activeMembersCount = members.filter((member) => member.familyId === activeFamily?.id).length;
+  const activeBudgetsCount = familyBudgets.filter(
+    (item) => item.familyId === activeFamily?.id,
+  ).length;
 
   const closeFamilyModal = () => {
     setFamilyScreenMode(null);
     setFamilyName('');
+    setSelectedBudgetIds([]);
     setFamilyError('');
   };
 
   const openCreateFamilyModal = () => {
     setFamilyName('');
+    setSelectedBudgetIds(initialBudgets[0] ? [initialBudgets[0].id] : []);
     setFamilyError('');
     setFamilyScreenMode('create');
   };
@@ -51,8 +61,22 @@ export default function FamilyScreen() {
     }
 
     setFamilyName(activeFamily.name);
+    setSelectedBudgetIds(
+      familyBudgets
+        .filter((item) => item.familyId === activeFamily.id)
+        .map((item) => item.budgetId),
+    );
     setFamilyError('');
     setFamilyScreenMode('edit');
+  };
+
+  const handleToggleBudget = (budgetId: string) => {
+    setSelectedBudgetIds((currentBudgetIds) =>
+      currentBudgetIds.includes(budgetId)
+        ? currentBudgetIds.filter((id) => id !== budgetId)
+        : [...currentBudgetIds, budgetId],
+    );
+    setFamilyError('');
   };
 
   const handleSaveFamily = () => {
@@ -63,12 +87,25 @@ export default function FamilyScreen() {
       return;
     }
 
+    if (!selectedBudgetIds.length) {
+      setFamilyError('Wybierz przynajmniej jeden budżet dla rodziny.');
+      return;
+    }
+
     if (familyScreenMode === 'edit' && activeFamily) {
       setFamilies((currentFamilies) =>
         currentFamilies.map((family) =>
           family.id === activeFamily.id ? { ...family, name: nextName } : family,
         ),
       );
+      setFamilyBudgets((currentFamilyBudgets) => [
+        ...currentFamilyBudgets.filter((item) => item.familyId !== activeFamily.id),
+        ...selectedBudgetIds.map((budgetId) => ({
+          id: `${activeFamily.id}-${budgetId}`,
+          familyId: activeFamily.id,
+          budgetId,
+        })),
+      ]);
       closeFamilyModal();
       return;
     }
@@ -82,9 +119,15 @@ export default function FamilyScreen() {
       familyId: nextFamily.id,
       userId: currentUserId,
     };
+    const nextFamilyBudgets = selectedBudgetIds.map((budgetId) => ({
+      id: `${nextFamily.id}-${budgetId}`,
+      familyId: nextFamily.id,
+      budgetId,
+    }));
 
     setFamilies((currentFamilies) => [nextFamily, ...currentFamilies]);
     setMembers((currentMembers) => [nextMember, ...currentMembers]);
+    setFamilyBudgets((currentFamilyBudgets) => [...nextFamilyBudgets, ...currentFamilyBudgets]);
     setActiveFamilyId(nextFamily.id);
     closeFamilyModal();
   };
@@ -120,6 +163,9 @@ export default function FamilyScreen() {
     setMembers((currentMembers) =>
       currentMembers.filter((member) => member.familyId !== familyToDeleteId),
     );
+    setFamilyBudgets((currentFamilyBudgets) =>
+      currentFamilyBudgets.filter((item) => item.familyId !== familyToDeleteId),
+    );
     setActiveFamilyId(nextFamilies[0]?.id ?? '');
     setFamilyToDeleteId(null);
   };
@@ -139,6 +185,7 @@ export default function FamilyScreen() {
 
         <FamilyList
           activeFamilyId={activeFamily?.id}
+          familyBudgets={familyBudgets}
           families={families}
           members={members}
           onSelectFamily={setActiveFamilyId}
@@ -151,7 +198,9 @@ export default function FamilyScreen() {
                 <View>
                   <Text style={styles.summaryLabel}>Aktywna rodzina</Text>
                   <Text style={styles.summaryTitle}>{activeFamily.name}</Text>
-                  <Text style={styles.familyMeta}>{activeMembersCount} członków</Text>
+                  <Text style={styles.familyMeta}>
+                    {activeMembersCount} członków · {activeBudgetsCount} budżetów
+                  </Text>
                 </View>
                 <View style={styles.iconButtonRow}>
                   <Pressable onPress={openEditFamilyModal} style={styles.iconButton}>
@@ -165,6 +214,12 @@ export default function FamilyScreen() {
                 </View>
               </View>
             </View>
+
+            <FamilyBudgetsList
+              budgets={initialBudgets}
+              familyBudgets={familyBudgets}
+              familyId={activeFamily.id}
+            />
 
             <FamilyMembersList
               familyId={activeFamily.id}
@@ -184,12 +239,15 @@ export default function FamilyScreen() {
       </ScrollView>
 
       <FamilyModal
+        budgets={initialBudgets}
         error={familyError}
         familyName={familyName}
         mode={familyScreenMode === 'edit' ? 'edit' : 'create'}
         onChangeFamilyName={setFamilyName}
         onClose={closeFamilyModal}
         onSave={handleSaveFamily}
+        onToggleBudget={handleToggleBudget}
+        selectedBudgetIds={selectedBudgetIds}
         visible={Boolean(familyScreenMode)}
       />
 

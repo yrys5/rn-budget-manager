@@ -145,6 +145,20 @@ export const familyStyles = StyleSheet.create({
     gap: 12,
     minHeight: 72,
   },
+  budgetRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 72,
+  },
+  budgetIcon: {
+    alignItems: 'center',
+    backgroundColor: '#E5F5EC',
+    borderRadius: 8,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
+  },
   avatar: {
     alignItems: 'center',
     backgroundColor: '#D9F2E4',
@@ -277,6 +291,19 @@ export const familyStyles = StyleSheet.create({
   },
   selectButtonMetaActive: {
     color: '#C9D8D1',
+  },
+  checkboxIcon: {
+    alignItems: 'center',
+    borderColor: '#B7C7BF',
+    borderRadius: 6,
+    borderWidth: 1,
+    height: 24,
+    justifyContent: 'center',
+    width: 24,
+  },
+  checkboxIconActive: {
+    backgroundColor: '#157348',
+    borderColor: '#157348',
   },
   primaryButton: {
     alignItems: 'center',

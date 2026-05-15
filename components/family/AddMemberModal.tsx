@@ -1,5 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { familyStyles as styles } from './styles';
 import type { FamilyMember, User } from './types';
@@ -21,52 +31,88 @@ export function AddMemberModal({
   users,
   visible,
 }: AddMemberModalProps) {
-  const availableUsers = users.filter(
-    (user) =>
-      !members.some((member) => member.familyId === familyId && member.userId === user.id),
-  );
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const resetAndClose = () => {
+    setEmail('');
+    setError('');
+    onClose();
+  };
+
+  const handleAddMember = () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = users.find((item) => item.email.toLowerCase() === normalizedEmail);
+
+    if (!normalizedEmail.includes('@')) {
+      setError('Podaj poprawny adres e-mail.');
+      return;
+    }
+
+    if (!user) {
+      setError('Nie znaleziono użytkownika z takim adresem e-mail.');
+      return;
+    }
+
+    const isAlreadyMember = members.some(
+      (member) => member.familyId === familyId && member.userId === user.id,
+    );
+
+    if (isAlreadyMember) {
+      setError('Ten użytkownik jest już członkiem tej rodziny.');
+      return;
+    }
+
+    onAddMember(user.id);
+    setEmail('');
+    setError('');
+  };
 
   return (
     <Modal animationType="slide" transparent visible={visible}>
       <View style={styles.modalOverlay}>
-        <ScrollView
-          contentContainerStyle={styles.modalScrollContent}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHandle} />
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Dodaj członka</Text>
-              <Pressable hitSlop={10} onPress={onClose}>
-                <Ionicons name="close" size={24} color="#40534B" />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalKeyboardView}>
+          <ScrollView
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Dodaj członka</Text>
+                <Pressable hitSlop={10} onPress={resetAndClose}>
+                  <Ionicons name="close" size={24} color="#40534B" />
+                </Pressable>
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>E-mail użytkownika</Text>
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  inputMode="email"
+                  keyboardType="email-address"
+                  onChangeText={(value) => {
+                    setEmail(value);
+                    setError('');
+                  }}
+                  placeholder="np. anna@example.com"
+                  placeholderTextColor="#8D9994"
+                  style={[styles.input, error ? styles.inputError : null]}
+                  value={email}
+                />
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              </View>
+
+              <Pressable onPress={handleAddMember} style={styles.primaryButton}>
+                <Text style={styles.primaryButtonText}>Dodaj do rodziny</Text>
+                <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
               </Pressable>
             </View>
-
-            <View style={styles.selectList}>
-              {availableUsers.length ? (
-                availableUsers.map((user) => (
-                  <Pressable
-                    key={user.id}
-                    onPress={() => onAddMember(user.id)}
-                    style={styles.selectButton}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{user.username.slice(0, 2)}</Text>
-                    </View>
-                    <View style={styles.selectButtonCopy}>
-                      <Text style={styles.selectButtonText}>{user.username}</Text>
-                      <Text style={styles.selectButtonMeta}>{user.email}</Text>
-                    </View>
-                  </Pressable>
-                ))
-              ) : (
-                <View style={styles.emptyState}>
-                  <Ionicons name="checkmark-circle-outline" size={28} color="#66736E" />
-                  <Text style={styles.emptyTitle}>Wszyscy są już w rodzinie</Text>
-                  <Text style={styles.emptyText}>Nie ma użytkowników do dodania.</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

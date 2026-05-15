@@ -11,6 +11,12 @@ export type Family = {
   name: string;
 };
 
+export type FamilyBudget = {
+  id: string;
+  familyId: string;
+  budgetId: string;
+};
+
 export type FamilyMember = {
   id: string;
   familyId: string;
