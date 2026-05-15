@@ -154,7 +154,6 @@ export default function BudgetsScreen() {
       id: editingCategoryId ?? `${Date.now()}`,
       name: nextName,
       type: selectedCategoryType.label,
-      amount: 0,
       icon: selectedCategoryType.icon,
       color: selectedCategoryType.color,
     };
@@ -169,9 +168,7 @@ export default function BudgetsScreen() {
           return {
             ...budget,
             categories: budget.categories.map((category) =>
-              category.id === editingCategoryId
-                ? { ...category, ...nextCategory, amount: category.amount }
-                : category,
+              category.id === editingCategoryId ? { ...category, ...nextCategory } : category,
             ),
           };
         }

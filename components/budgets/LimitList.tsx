@@ -26,10 +26,7 @@ export function LimitList({ budget, onCreateLimit, onEditLimit }: LimitListProps
         {budget.limits.length ? (
           budget.limits.map((limit) => {
             const category = budget.categories.find((item) => item.id === limit.categoryId);
-            const spentAmount = category?.amount ?? 0;
-            const progress = limit.limitAmount > 0
-              ? Math.min(Math.round((spentAmount / limit.limitAmount) * 100), 100)
-              : 0;
+            const progress = 0;
 
             return (
               <View key={limit.id} style={styles.limitRow}>

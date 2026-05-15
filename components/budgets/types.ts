@@ -20,7 +20,6 @@ export type Category = {
   id: string;
   name: string;
   type: CategoryType;
-  amount: number;
   icon: IconName;
   color: string;
 };
