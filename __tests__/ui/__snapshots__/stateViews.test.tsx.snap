@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`state UI components renders empty, error, and loading states 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#FFFFFF",
+      "borderColor": "#DAE5DF",
+      "borderRadius": 8,
+      "borderWidth": 1,
+      "gap": 10,
+      "padding": 18,
+    }
+  }
+>
+  <Text>
+    file-tray-outline
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#10251F",
+        "fontSize": 16,
+        "fontWeight": "800",
+      }
+    }
+  >
+    Brak danych
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#5D6B66",
+        "fontSize": 14,
+        "lineHeight": 20,
+        "textAlign": "center",
+      }
+    }
+  >
+    Dodaj pierwszy element.
+  </Text>
+</View>
+`;
