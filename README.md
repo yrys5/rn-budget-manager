@@ -1,6 +1,6 @@
 # RN Budget Manager
 
-Frontend aplikacji mobilnej do zarządzania budżetem. Aktualny zakres obejmuje ekran powitalny oraz ekrany rejestracji i logowania użytkownika.
+Frontend aplikacji mobilnej do zarządzania budżetem. Aktualny zakres obejmuje ekran powitalny, ekrany rejestracji i logowania oraz pierwszy dashboard po zalogowaniu.
 
 ## Uruchomienie
 
@@ -29,4 +29,10 @@ npm run web
 - `app/index.tsx` - ekran powitalny
 - `app/register.tsx` - ekran rejestracji
 - `app/login.tsx` - ekran logowania
+- `app/(tabs)/_layout.tsx` - dolna nawigacja aplikacji po zalogowaniu
+- `app/(tabs)/dashboard.tsx` - dashboard użytkownika po zalogowaniu
+- `app/(tabs)/budgets.tsx` - zakładka budżetów
+- `app/(tabs)/transactions.tsx` - zakładka transakcji
+- `app/(tabs)/goals.tsx` - zakładka celów
+- `app/(tabs)/family.tsx` - zakładka rodziny
 - `app/_layout.tsx` - główny layout Expo Router

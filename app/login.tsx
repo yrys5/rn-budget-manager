@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 type LoginErrors = Partial<Record<'email' | 'password', string>>;
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -43,6 +44,7 @@ export default function LoginScreen() {
 
     if (validateForm()) {
       setIsSubmitted(true);
+      router.replace('/dashboard');
     }
   };
 
