@@ -3,18 +3,7 @@ import type { ComponentProps } from 'react';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
-export type CategoryType =
-  | 'Jedzenie'
-  | 'Mieszkanie/dom'
-  | 'Transport'
-  | 'Telekomunikacja'
-  | 'Opieka zdrowotna'
-  | 'Ubranie'
-  | 'Higiena'
-  | 'Osobiste wydatki'
-  | 'Rozrywka'
-  | 'Budowanie oszczędności'
-  | 'Inne wydatki';
+export type CategoryType = 'Przychód' | 'Wydatek';
 
 export type Category = {
   id: string;

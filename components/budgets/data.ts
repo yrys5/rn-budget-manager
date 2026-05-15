@@ -1,17 +1,8 @@
 import type { Budget, CategoryTypeOption, Currency } from './types';
 
 export const categoryTypes: CategoryTypeOption[] = [
-  { label: 'Jedzenie', icon: 'restaurant-outline', color: '#1D8E62' },
-  { label: 'Mieszkanie/dom', icon: 'home-outline', color: '#466B8F' },
-  { label: 'Transport', icon: 'car-outline', color: '#526E9E' },
-  { label: 'Telekomunikacja', icon: 'call-outline', color: '#7B5FA3' },
-  { label: 'Opieka zdrowotna', icon: 'medical-outline', color: '#C45A5A' },
-  { label: 'Ubranie', icon: 'shirt-outline', color: '#A06B43' },
-  { label: 'Higiena', icon: 'sparkles-outline', color: '#42827C' },
-  { label: 'Osobiste wydatki', icon: 'person-outline', color: '#6E7681' },
-  { label: 'Rozrywka', icon: 'game-controller-outline', color: '#D89D26' },
-  { label: 'Budowanie oszczędności', icon: 'trending-up-outline', color: '#157348' },
-  { label: 'Inne wydatki', icon: 'ellipsis-horizontal-circle-outline', color: '#66736E' },
+  { label: 'Wydatek', icon: 'arrow-down-circle-outline', color: '#B73E3E' },
+  { label: 'Przychód', icon: 'arrow-up-circle-outline', color: '#157348' },
 ];
 
 export const initialBudgets: Budget[] = [
@@ -25,23 +16,30 @@ export const initialBudgets: Budget[] = [
       {
         id: 'food',
         name: 'Zakupy spożywcze',
-        type: 'Jedzenie',
+        type: 'Wydatek',
         icon: 'restaurant-outline',
         color: '#1D8E62',
       },
       {
         id: 'bills',
         name: 'Opłaty mieszkaniowe',
-        type: 'Mieszkanie/dom',
+        type: 'Wydatek',
         icon: 'home-outline',
         color: '#466B8F',
       },
       {
         id: 'fun',
         name: 'Weekend',
-        type: 'Rozrywka',
+        type: 'Wydatek',
         icon: 'game-controller-outline',
         color: '#D89D26',
+      },
+      {
+        id: 'salary',
+        name: 'Wynagrodzenie',
+        type: 'Przychód',
+        icon: 'cash-outline',
+        color: '#157348',
       },
     ],
     limits: [
@@ -77,14 +75,14 @@ export const initialBudgets: Budget[] = [
       {
         id: 'travel',
         name: 'Dojazdy',
-        type: 'Transport',
+        type: 'Wydatek',
         icon: 'car-outline',
         color: '#526E9E',
       },
       {
         id: 'hotel',
         name: 'Apartament',
-        type: 'Mieszkanie/dom',
+        type: 'Wydatek',
         icon: 'home-outline',
         color: '#466B8F',
       },
@@ -112,21 +110,21 @@ export const initialBudgets: Budget[] = [
       {
         id: 'school',
         name: 'Kieszonkowe',
-        type: 'Osobiste wydatki',
+        type: 'Wydatek',
         icon: 'person-outline',
         color: '#6E7681',
       },
       {
         id: 'health',
         name: 'Lekarz i apteka',
-        type: 'Opieka zdrowotna',
+        type: 'Wydatek',
         icon: 'medical-outline',
         color: '#C45A5A',
       },
       {
         id: 'house',
         name: 'Dom',
-        type: 'Mieszkanie/dom',
+        type: 'Wydatek',
         icon: 'home-outline',
         color: '#466B8F',
       },
