@@ -161,6 +161,11 @@ export default function FamilyScreen() {
       setFamilies((currentFamilies) => [result.family, ...currentFamilies]);
       if (result.member) {
         setMembers((currentMembers) => [result.member!, ...currentMembers]);
+        setUsers((currentUsers) =>
+          result.user && !currentUsers.some((user) => user.id === result.user?.id)
+            ? [result.user, ...currentUsers]
+            : currentUsers,
+        );
       }
       setFamilyBudgets((currentFamilyBudgets) => [
         ...result.familyBudgets,
