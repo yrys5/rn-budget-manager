@@ -579,35 +579,13 @@ const httpBackend = {
     family: Family;
     budgetIds: string[];
     ownerUserId?: string;
-  }): Promise<{ family: Family; familyBudgets: FamilyBudget[]; member?: FamilyMember; user?: User }> {
-    const isEditing = Boolean(input.family.id);
+  }): Promise<{ family: Family; familyBudgets: FamilyBudget[]; member?: FamilyMember }> {
     const response = await apiRequest<unknown>(
-      isEditing ? endpoints.families.detail(input.family.id) : endpoints.families.collection,
-      { body: { name: input.family.name }, method: isEditing ? 'PUT' : 'POST' },
+      input.family.id ? endpoints.families.detail(input.family.id) : endpoints.families.collection,
+      { body: { name: input.family.name }, method: input.family.id ? 'PUT' : 'POST' },
     );
-    const family = normalizeFamily(response, input.family);
-    const sessionUser = getAuthSession()?.user;
-    const user = sessionUser
-      ? {
-          createdAt: sessionUser.createdAt,
-          email: sessionUser.email,
-          id: sessionUser.id,
-          passwordHash: '',
-          username: sessionUser.username,
-        }
-      : undefined;
-    const member =
-      !isEditing && sessionUser?.email
-        ? normalizeFamilyMember(
-            await apiRequest<unknown>(endpoints.families.members(family.id), {
-              body: { email: sessionUser.email },
-              method: 'POST',
-            }),
-            family.id,
-          )
-        : undefined;
 
-    return { family, familyBudgets: [], member, user };
+    return { family: normalizeFamily(response, input.family), familyBudgets: [] };
   },
   deleteFamily: (familyId: string) =>
     apiRequest<void>(endpoints.families.detail(familyId), { method: 'DELETE' }),

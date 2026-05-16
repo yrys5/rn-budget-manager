@@ -11,7 +11,6 @@ import type {
   RegisterInput,
   SavingsGoal,
   Transaction,
-  User,
 } from '@/shared/model/finance';
 import { setAuthSession } from './authSession';
 import {
@@ -258,7 +257,7 @@ export const mockBackend = {
     family: Family;
     budgetIds: string[];
     ownerUserId?: string;
-  }): Promise<{ family: Family; familyBudgets: FamilyBudget[]; member?: FamilyMember; user?: User }> {
+  }): Promise<{ family: Family; familyBudgets: FamilyBudget[]; member?: FamilyMember }> {
     await wait();
     const savedFamily = {
       ...input.family,
@@ -282,9 +281,9 @@ export const mockBackend = {
 
     const member = !exists
       ? {
-          id: `${savedFamily.id}-${currentUserId}`,
+          id: `${savedFamily.id}-${input.ownerUserId ?? currentUserId}`,
           familyId: savedFamily.id,
-          userId: currentUserId,
+          userId: input.ownerUserId ?? currentUserId,
         }
       : undefined;
 
@@ -292,12 +291,7 @@ export const mockBackend = {
       familyMembers = [member, ...familyMembers];
     }
 
-    return clone({
-      family: savedFamily,
-      familyBudgets: nextFamilyBudgets,
-      member,
-      user: users.find((item) => item.id === currentUserId),
-    });
+    return clone({ family: savedFamily, familyBudgets: nextFamilyBudgets, member });
   },
 
   async deleteFamily(familyId: string): Promise<void> {
