@@ -571,7 +571,7 @@ const httpBackend = {
         passwordHash: '',
         username: `Użytkownik ${member.userId}`,
     }));
-    const users = uniqueUsers([...embeddedUsers, ...fallbackUsers]);
+    const users = uniqueUsers([...fallbackUsers, ...embeddedUsers]);
 
     return { families, familyBudgets: [], members, users };
   },
