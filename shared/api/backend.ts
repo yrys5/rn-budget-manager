@@ -589,9 +589,9 @@ const httpBackend = {
   },
   deleteFamily: (familyId: string) =>
     apiRequest<void>(endpoints.families.detail(familyId), { method: 'DELETE' }),
-  async addFamilyMember(familyId: string, userId: string): Promise<FamilyMember> {
+  async addFamilyMember(familyId: string, email: string): Promise<FamilyMember> {
     const response = await apiRequest<unknown>(endpoints.families.members(familyId), {
-      body: { userId: toBackendId(userId) },
+      body: { email },
       method: 'POST',
     });
 

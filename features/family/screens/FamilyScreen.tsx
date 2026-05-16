@@ -173,14 +173,14 @@ export default function FamilyScreen() {
     }
   };
 
-  const handleAddMember = async (userId: string) => {
+  const handleAddMember = async (email: string) => {
     if (!activeFamily) {
       return;
     }
 
     setIsSaving(true);
     try {
-      const member = await familyApi.addMember(activeFamily.id, userId);
+      const member = await familyApi.addMember(activeFamily.id, email);
       setMembers((currentMembers) => [member, ...currentMembers]);
       setUsers((currentUsers) =>
         currentUsers.some((user) => user.id === member.userId)
@@ -188,10 +188,10 @@ export default function FamilyScreen() {
           : [
               {
                 createdAt: '',
-                email: '',
+                email,
                 id: member.userId,
                 passwordHash: '',
-                username: `Użytkownik ${member.userId}`,
+                username: email.split('@')[0],
               },
               ...currentUsers,
             ],

@@ -17,7 +17,7 @@ import type { FamilyMember, User } from '@/shared/model/finance';
 type AddMemberModalProps = {
   familyId?: string;
   members: FamilyMember[];
-  onAddMember: (userId: string) => void;
+  onAddMember: (email: string) => void;
   onClose: () => void;
   users: User[];
   visible: boolean;
@@ -41,32 +41,24 @@ export function AddMemberModal({
   };
 
   const handleAddMember = () => {
-    const normalizedInput = email.trim();
-    const normalizedEmail = normalizedInput.toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
     const user = users.find((item) => item.email.toLowerCase() === normalizedEmail);
-    const isEmail = normalizedInput.includes('@');
-    const userId = user?.id ?? normalizedInput;
 
-    if (!normalizedInput) {
-      setError('Podaj e-mail albo ID użytkownika.');
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      setError('Podaj poprawny adres e-mail.');
       return;
     }
 
-    if (isEmail && !user) {
-      setError('Nie znaleziono użytkownika z takim adresem e-mail.');
-      return;
-    }
-
-    const isAlreadyMember = members.some(
-      (member) => member.familyId === familyId && member.userId === userId,
-    );
+    const isAlreadyMember =
+      user &&
+      members.some((member) => member.familyId === familyId && member.userId === user.id);
 
     if (isAlreadyMember) {
       setError('Ten użytkownik jest już członkiem tej rodziny.');
       return;
     }
 
-    onAddMember(userId);
+    onAddMember(normalizedEmail);
     setEmail('');
     setError('');
   };
@@ -91,7 +83,7 @@ export function AddMemberModal({
               </View>
 
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>E-mail lub ID użytkownika</Text>
+                <Text style={styles.label}>E-mail użytkownika</Text>
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -101,7 +93,7 @@ export function AddMemberModal({
                     setEmail(value);
                     setError('');
                   }}
-                  placeholder="np. anna@example.com lub 2"
+                  placeholder="np. anna@example.com"
                   placeholderTextColor="#8D9994"
                   style={[styles.input, error ? styles.inputError : null]}
                   value={email}

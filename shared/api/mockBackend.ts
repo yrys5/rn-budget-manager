@@ -301,12 +301,16 @@ export const mockBackend = {
     familyBudgets = familyBudgets.filter((familyBudget) => familyBudget.familyId !== familyId);
   },
 
-  async addFamilyMember(familyId: string, userId: string): Promise<FamilyMember> {
+  async addFamilyMember(familyId: string, email: string): Promise<FamilyMember> {
     await wait();
+    const user =
+      users.find((item) => item.email.toLowerCase() === email.toLowerCase()) ??
+      users.find((item) => item.id === email) ??
+      users[0];
     const member = {
-      id: `${Date.now()}-${userId}`,
+      id: `${Date.now()}-${user.id}`,
       familyId,
-      userId,
+      userId: user.id,
     };
     familyMembers = [member, ...familyMembers];
 
