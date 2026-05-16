@@ -8,6 +8,7 @@ import type {
   Family,
   FamilyBudget,
   FamilyMember,
+  RegisterInput,
   SavingsGoal,
   Transaction,
 } from '@/shared/model/finance';
@@ -62,7 +63,7 @@ export const mockBackend = {
     };
   },
 
-  async register(input: { username: string; email: string }): Promise<AuthSession> {
+  async register(input: RegisterInput): Promise<AuthSession> {
     await wait();
     const nextUser = {
       id: `user-${Date.now()}`,

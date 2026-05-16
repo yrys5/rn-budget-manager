@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { authApi } from '../api/authApi';
 import { mapApiError } from '@/shared/api/client';
+import type { RegisterInput } from '@/shared/model/finance';
 
 export const useAuthActions = () => {
   const [error, setError] = useState('');
@@ -22,7 +23,7 @@ export const useAuthActions = () => {
     }
   };
 
-  const register = async (input: { username: string; email: string; password: string }) => {
+  const register = async (input: RegisterInput) => {
     setError('');
     setIsLoading(true);
 

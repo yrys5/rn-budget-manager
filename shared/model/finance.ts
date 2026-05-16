@@ -109,6 +109,13 @@ export type AuthSession = {
   user: AuthUser;
 };
 
+export type RegisterInput = {
+  username: string;
+  email: string;
+  password: string;
+  acceptTerms: boolean;
+};
+
 export type CategoryScreenMode = 'create' | 'edit' | null;
 export type LimitScreenMode = 'create' | 'edit' | null;
 export type TransactionScreenMode = 'create' | 'edit' | null;

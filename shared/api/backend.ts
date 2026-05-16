@@ -11,6 +11,7 @@ import type {
   Family,
   FamilyBudget,
   FamilyMember,
+  RegisterInput,
   SavingsGoal,
   Transaction,
   User,
@@ -26,7 +27,7 @@ export type FamilyWorkspace = {
 const httpBackend = {
   login: (email: string, password: string) =>
     apiRequest<AuthSession>(endpoints.auth.login, { body: { email, password }, method: 'POST' }),
-  register: (input: { username: string; email: string; password: string }) =>
+  register: (input: RegisterInput) =>
     apiRequest<AuthSession>(endpoints.auth.register, { body: input, method: 'POST' }),
   me: () => apiRequest<AuthUser>(endpoints.auth.me),
   getDashboardSummary: () => apiRequest<DashboardSummary>(endpoints.dashboard.summary),

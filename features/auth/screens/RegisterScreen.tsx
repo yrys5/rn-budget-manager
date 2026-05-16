@@ -48,6 +48,7 @@ export default function RegisterScreen() {
 
     if (validateForm()) {
       const session = await register({
+        acceptTerms: acceptedTerms,
         email: email.trim(),
         password,
         username: username.trim(),
