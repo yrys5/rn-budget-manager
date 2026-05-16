@@ -1,3 +1,5 @@
+import { getAuthToken } from './session';
+
 export type ApiState<T> =
   | { status: 'idle'; data?: T; error?: undefined }
   | { status: 'loading'; data?: T; error?: undefined }
@@ -6,7 +8,7 @@ export type ApiState<T> =
   | { status: 'error'; data?: T; error: ApiError };
 
 export type ApiRequestOptions = {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   token?: string;
   timeoutMs?: number;
@@ -50,12 +52,13 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
   const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs ?? 10000);
 
   try {
+    const token = options.token ?? getAuthToken();
     const response = await fetch(`${API_BASE_URL}${path}`, {
       body: options.body ? JSON.stringify(options.body) : undefined,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       method: options.method ?? 'GET',
       signal: controller.signal,

@@ -22,7 +22,12 @@ export const useAuthActions = () => {
     }
   };
 
-  const register = async (input: { username: string; email: string; password: string }) => {
+  const register = async (input: {
+    username: string;
+    email: string;
+    password: string;
+    acceptTerms: boolean;
+  }) => {
     setError('');
     setIsLoading(true);
 

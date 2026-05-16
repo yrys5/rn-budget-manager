@@ -51,6 +51,7 @@ export default function RegisterScreen() {
         email: email.trim(),
         password,
         username: username.trim(),
+        acceptTerms: acceptedTerms,
       });
 
       if (session) {
