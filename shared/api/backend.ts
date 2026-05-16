@@ -86,6 +86,28 @@ const readArray = (source: ApiRecord, keys: string[]) => {
   return Array.isArray(value) ? value : [];
 };
 
+const unwrapList = (value: unknown, keys: string[] = []) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const listKeys = [...keys, 'items', 'data', 'value', 'values', '$values', 'results'];
+
+  for (const key of listKeys) {
+    const list = value[key];
+
+    if (Array.isArray(list)) {
+      return list;
+    }
+  }
+
+  return [];
+};
+
 const isNumericId = (id: string) => /^\d+$/.test(id);
 
 const toBackendId = (id: string) => (isNumericId(id) ? Number(id) : id);
@@ -256,10 +278,29 @@ const normalizeFamilyMember = (value: unknown, familyId: string): FamilyMember =
 
   return {
     familyId: readString(source, ['familyId'], familyId),
-    id: readString(source, ['id', 'memberId'], `${familyId}-${userId}`),
+    id: readString(source, ['id', 'familyMemberId', 'memberId'], `${familyId}-${userId}`),
     userId,
   };
 };
+
+const getFamilyMembersFromPayload = (familyPayload: unknown, familyId: string) => {
+  const source = isRecord(familyPayload) ? familyPayload : {};
+
+  return unwrapList(readValue(source, ['members', 'familyMembers'])).map((member) =>
+    normalizeFamilyMember(member, familyId),
+  );
+};
+
+const getUsersFromFamilyPayload = (familyPayload: unknown) => {
+  const source = isRecord(familyPayload) ? familyPayload : {};
+
+  return unwrapList(readValue(source, ['members', 'familyMembers']))
+    .map((member) => normalizeUser(readValue(isRecord(member) ? member : {}, ['user']) ?? member))
+    .filter((user): user is User => Boolean(user));
+};
+
+const uniqueUsers = (users: User[]) =>
+  Array.from(new Map(users.map((user) => [user.id, user])).values());
 
 const normalizeAuthUser = (value: unknown): AuthUser => {
   const source = isRecord(value) ? value : {};
@@ -281,11 +322,15 @@ const normalizeAuthSession = (value: unknown): AuthSession => {
   };
 };
 
-const optionalListRequest = async <T>(path: string, normalize: (value: unknown) => T) => {
+const optionalListRequest = async <T>(
+  path: string,
+  normalize: (value: unknown) => T,
+  listKeys: string[] = [],
+) => {
   try {
-    const response = await apiRequest<unknown[]>(path);
+    const response = await apiRequest<unknown>(path);
 
-    return Array.isArray(response) ? response.map(normalize) : [];
+    return unwrapList(response, listKeys).map(normalize);
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 405)) {
       return [];
@@ -500,24 +545,33 @@ const httpBackend = {
     });
   },
   async getFamilyWorkspace(): Promise<FamilyWorkspace> {
-    const families = await optionalListRequest(endpoints.families.collection, normalizeFamily);
-    const membersByFamily = await Promise.all(
-      families.map((family) =>
-        optionalListRequest(endpoints.families.members(family.id), (member) =>
-          normalizeFamilyMember(member, family.id),
-        ),
-      ),
+    const response = await apiRequest<unknown>(endpoints.families.collection);
+    const familyPayloads = unwrapList(response, ['families']);
+    const families = familyPayloads.map((familyPayload) => normalizeFamily(familyPayload));
+    const embeddedMembers = familyPayloads.flatMap((familyPayload, index) =>
+      getFamilyMembersFromPayload(familyPayload, families[index]?.id ?? ''),
     );
-    const members = membersByFamily.flat();
-    const users = membersByFamily
-      .flatMap((memberGroup) => memberGroup)
-      .map((member) => ({
+    const fallbackMembersByFamily = embeddedMembers.length
+      ? []
+      : await Promise.all(
+          families.map((family) =>
+            optionalListRequest(
+              endpoints.families.members(family.id),
+              (member) => normalizeFamilyMember(member, family.id),
+              ['members', 'familyMembers'],
+            ),
+          ),
+        );
+    const members = embeddedMembers.length ? embeddedMembers : fallbackMembersByFamily.flat();
+    const embeddedUsers = familyPayloads.flatMap(getUsersFromFamilyPayload);
+    const fallbackUsers = members.map((member) => ({
         createdAt: '',
         email: '',
         id: member.userId,
         passwordHash: '',
         username: `Użytkownik ${member.userId}`,
-      }));
+    }));
+    const users = uniqueUsers([...embeddedUsers, ...fallbackUsers]);
 
     return { families, familyBudgets: [], members, users };
   },
