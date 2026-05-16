@@ -1,3 +1,5 @@
+import { clearAuthSession, getAuthToken } from './authSession';
+
 export type ApiState<T> =
   | { status: 'idle'; data?: T; error?: undefined }
   | { status: 'loading'; data?: T; error?: undefined }
@@ -6,6 +8,7 @@ export type ApiState<T> =
   | { status: 'error'; data?: T; error: ApiError };
 
 export type ApiRequestOptions = {
+  auth?: boolean;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   token?: string;
@@ -48,6 +51,7 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs ?? 10000);
+  const token = options.token ?? (options.auth === false ? undefined : getAuthToken());
 
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -55,7 +59,7 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       method: options.method ?? 'GET',
       signal: controller.signal,
@@ -65,6 +69,10 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
     const payload = text ? JSON.parse(text) : undefined;
 
     if (!response.ok) {
+      if (response.status === 401) {
+        clearAuthSession();
+      }
+
       throw new ApiError(
         payload?.message ?? 'Serwer zwrócił błąd.',
         payload?.code ?? 'HTTP_ERROR',

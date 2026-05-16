@@ -1,6 +1,7 @@
 import { apiRequest, API_BASE_URL, ApiError } from './client';
 import { endpoints } from './contracts';
 import { mockBackend } from './mockBackend';
+import { setAuthSession } from './authSession';
 import { categoryTypes } from '@/shared/model/finance';
 import type {
   AuthSession,
@@ -225,6 +226,26 @@ const normalizeFamilyMember = (value: unknown, familyId: string): FamilyMember =
   };
 };
 
+const normalizeAuthUser = (value: unknown): AuthUser => {
+  const source = isRecord(value) ? value : {};
+
+  return {
+    createdAt: readString(source, ['createdAt'], ''),
+    email: readString(source, ['email'], ''),
+    id: readString(source, ['id', 'userId'], ''),
+    username: readString(source, ['username'], ''),
+  };
+};
+
+const normalizeAuthSession = (value: unknown): AuthSession => {
+  const source = isRecord(value) ? value : {};
+
+  return {
+    token: readString(source, ['token']),
+    user: normalizeAuthUser(readValue(source, ['user'])),
+  };
+};
+
 const optionalListRequest = async <T>(path: string, normalize: (value: unknown) => T) => {
   try {
     const response = await apiRequest<unknown[]>(path);
@@ -256,11 +277,33 @@ const listBudgetGoals = async (budgetId: string) =>
   optionalListRequest(endpoints.budgets.goals(budgetId), (goal) => normalizeGoal(goal, budgetId));
 
 const httpBackend = {
-  login: (email: string, password: string) =>
-    apiRequest<AuthSession>(endpoints.auth.login, { body: { email, password }, method: 'POST' }),
-  register: (input: RegisterInput) =>
-    apiRequest<AuthSession>(endpoints.auth.register, { body: input, method: 'POST' }),
-  me: () => apiRequest<AuthUser>(endpoints.auth.me),
+  async login(email: string, password: string): Promise<AuthSession> {
+    const response = await apiRequest<unknown>(endpoints.auth.login, {
+      auth: false,
+      body: { email, password },
+      method: 'POST',
+    });
+    const session = normalizeAuthSession(response);
+
+    setAuthSession(session);
+    return session;
+  },
+  async register(input: RegisterInput): Promise<AuthSession> {
+    const response = await apiRequest<unknown>(endpoints.auth.register, {
+      auth: false,
+      body: input,
+      method: 'POST',
+    });
+    const session = normalizeAuthSession(response);
+
+    setAuthSession(session);
+    return session;
+  },
+  async me(): Promise<AuthUser> {
+    const response = await apiRequest<unknown>(endpoints.auth.me);
+
+    return normalizeAuthUser(response);
+  },
   async getDashboardSummary(): Promise<DashboardSummary> {
     const [budgets, transactions, goals, familyWorkspace] = await Promise.all([
       this.listBudgets(),

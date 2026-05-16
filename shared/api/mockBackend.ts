@@ -12,6 +12,7 @@ import type {
   SavingsGoal,
   Transaction,
 } from '@/shared/model/finance';
+import { setAuthSession } from './authSession';
 import {
   currentUserId,
   demoBudgets,
@@ -52,7 +53,7 @@ export const mockBackend = {
     await wait();
     const user = users.find((item) => item.email === email) ?? users[0];
 
-    return {
+    const session = {
       token: 'mock-session-token',
       user: {
         createdAt: user.createdAt,
@@ -61,6 +62,9 @@ export const mockBackend = {
         username: user.username,
       },
     };
+
+    setAuthSession(session);
+    return session;
   },
 
   async register(input: RegisterInput): Promise<AuthSession> {
@@ -75,7 +79,7 @@ export const mockBackend = {
 
     users = [nextUser, ...users];
 
-    return {
+    const session = {
       token: 'mock-session-token',
       user: {
         createdAt: nextUser.createdAt,
@@ -84,6 +88,9 @@ export const mockBackend = {
         username: nextUser.username,
       },
     };
+
+    setAuthSession(session);
+    return session;
   },
 
   async me(): Promise<AuthUser> {
