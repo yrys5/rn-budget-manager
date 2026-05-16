@@ -55,6 +55,31 @@ const readNumber = (source: ApiRecord, keys: string[], fallback = 0) => {
   return Number.isFinite(numberValue) ? numberValue : fallback;
 };
 
+const formatDateOnly = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const toDateOnly = (value: unknown, fallback = new Date().toISOString().slice(0, 10)) => {
+  const rawValue = value === undefined || value === null ? fallback : `${value}`;
+  const dateOnlyMatch = rawValue.match(/^(\d{4}-\d{2}-\d{2})/);
+
+  if (dateOnlyMatch) {
+    return dateOnlyMatch[1];
+  }
+
+  const parsedDate = new Date(rawValue);
+
+  if (!Number.isNaN(parsedDate.getTime())) {
+    return formatDateOnly(parsedDate);
+  }
+
+  return fallback;
+};
+
 const readArray = (source: ApiRecord, keys: string[]) => {
   const value = readValue(source, keys);
 
@@ -161,9 +186,8 @@ const normalizeTransaction = (
       'PLN') as Transaction['currency'],
     description: readString(source, ['description'], fallback?.description ?? ''),
     id: readString(source, ['id', 'transactionId'], fallback?.id ?? `${Date.now()}`),
-    transactionDate: readString(
-      source,
-      ['transactionDate'],
+    transactionDate: toDateOnly(
+      readValue(source, ['transactionDate']),
       fallback?.transactionDate ?? new Date().toISOString().slice(0, 10),
     ),
     userId: readString(source, ['userId'], fallback?.userId ?? ''),
@@ -184,15 +208,13 @@ const normalizeGoal = (
     currentAmount: readNumber(source, ['currentAmount'], fallback?.currentAmount ?? 0),
     id: readString(source, ['id', 'goalId', 'savingsGoalId'], fallback?.id ?? `${Date.now()}`),
     name: readString(source, ['name'], fallback?.name ?? ''),
-    startDate: readString(
-      source,
-      ['startDate'],
+    startDate: toDateOnly(
+      readValue(source, ['startDate']),
       fallback?.startDate ?? new Date().toISOString().slice(0, 10),
     ),
     targetAmount: readNumber(source, ['targetAmount'], fallback?.targetAmount ?? 0),
-    targetDate: readString(
-      source,
-      ['targetDate'],
+    targetDate: toDateOnly(
+      readValue(source, ['targetDate']),
       fallback?.targetDate ?? new Date().toISOString().slice(0, 10),
     ),
   };

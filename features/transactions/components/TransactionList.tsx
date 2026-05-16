@@ -6,13 +6,15 @@ import type { Budget } from '@/shared/model/finance';
 import { transactionStyles as styles } from './styles';
 import type { Transaction } from '@/shared/model/finance';
 
+const toDateOnly = (date: string) => date.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? date;
+
 const getMonthHeader = (date: string) =>
   new Intl.DateTimeFormat('pl-PL', {
     month: 'long',
     year: 'numeric',
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(`${toDateOnly(date)}T00:00:00`));
 
-const getMonthKey = (date: string) => date.slice(0, 7);
+const getMonthKey = (date: string) => toDateOnly(date).slice(0, 7);
 
 type TransactionListProps = {
   budgets: Budget[];
@@ -82,7 +84,7 @@ export function TransactionList({
                       <Text style={styles.transactionTitle}>{transaction.description}</Text>
                       <Text style={styles.transactionMeta}>
                         {budget?.name ?? 'Budżet'} · {category?.name ?? 'Kategoria'} ·{' '}
-                        {transaction.transactionDate}
+                        {toDateOnly(transaction.transactionDate)}
                       </Text>
                     </View>
                     <Text
