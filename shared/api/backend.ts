@@ -1,7 +1,7 @@
 import { apiRequest, API_BASE_URL, ApiError } from './client';
 import { endpoints } from './contracts';
 import { mockBackend } from './mockBackend';
-import { setAuthSession } from './authSession';
+import { getAuthSession, setAuthSession } from './authSession';
 import { categoryTypes } from '@/shared/model/finance';
 import type {
   AuthSession,
@@ -61,7 +61,20 @@ const readArray = (source: ApiRecord, keys: string[]) => {
   return Array.isArray(value) ? value : [];
 };
 
-const toBackendId = (id: string) => (/^\d+$/.test(id) ? Number(id) : id);
+const isNumericId = (id: string) => /^\d+$/.test(id);
+
+const toBackendId = (id: string) => (isNumericId(id) ? Number(id) : id);
+
+const toBackendUserId = (id: string) => {
+  const sessionUserId = getAuthSession()?.user.id ?? '';
+  const resolvedId = isNumericId(id) ? id : sessionUserId;
+
+  if (!isNumericId(resolvedId)) {
+    throw new ApiError('Brak numerycznego identyfikatora użytkownika.', 'INVALID_USER_ID');
+  }
+
+  return Number(resolvedId);
+};
 
 const toCategoryType = (value: unknown): CategoryType =>
   value === 'Przychód' ? 'Przychód' : 'Wydatek';
@@ -392,7 +405,7 @@ const httpBackend = {
       currency: transaction.currency,
       description: transaction.description,
       transactionDate: transaction.transactionDate,
-      userId: toBackendId(transaction.userId),
+      userId: toBackendUserId(transaction.userId),
     };
     const response = await apiRequest<unknown>(
       transaction.id
