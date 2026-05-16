@@ -284,7 +284,10 @@ export function TransactionFormScreen({
           </View>
 
           <View style={styles.formActions}>
-            <Pressable onPress={onSaveTransaction} style={styles.primaryButton}>
+            <Pressable
+              accessibilityLabel={isEditingTransaction ? 'Zapisz transakcję' : 'Dodaj transakcję'}
+              onPress={onSaveTransaction}
+              style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>
                 {isEditingTransaction ? "Zapisz zmiany" : "Dodaj transakcję"}
               </Text>

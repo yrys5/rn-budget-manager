@@ -84,6 +84,7 @@ export function FamilyModal({
 
                     return (
                       <Pressable
+                        accessibilityLabel={`Wybierz budżet ${budget.name}`}
                         key={budget.id}
                         onPress={() => onToggleBudget(budget.id)}
                         style={[styles.selectButton, isSelected ? styles.selectButtonActive : null]}>
@@ -119,7 +120,10 @@ export function FamilyModal({
                 {budgetError ? <Text style={styles.errorText}>{budgetError}</Text> : null}
               </View>
 
-              <Pressable onPress={onSave} style={styles.primaryButton}>
+              <Pressable
+                accessibilityLabel={mode === 'edit' ? 'Zapisz rodzinę' : 'Utwórz rodzinę'}
+                onPress={onSave}
+                style={styles.primaryButton}>
                 <Text style={styles.primaryButtonText}>
                   {mode === 'edit' ? 'Zapisz zmiany' : 'Utwórz rodzinę'}
                 </Text>

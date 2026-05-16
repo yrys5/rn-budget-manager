@@ -188,6 +188,7 @@ export default function RegisterScreen() {
             ) : null}
 
             <Pressable
+              accessibilityLabel="Utwórz konto"
               disabled={isLoading}
               onPress={handleCreateAccount}
               style={styles.primaryButton}>

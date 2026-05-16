@@ -276,7 +276,10 @@ export default function FamilyScreen() {
             <Text style={styles.eyebrow}>Rodzina</Text>
             <Text style={styles.title}>Wspólne budżety</Text>
           </View>
-          <Pressable onPress={openCreateFamilyModal} style={styles.addButton}>
+          <Pressable
+            accessibilityLabel="Dodaj rodzinę"
+            onPress={openCreateFamilyModal}
+            style={styles.addButton}>
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </Pressable>
         </View>

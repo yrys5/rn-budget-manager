@@ -16,7 +16,10 @@ export function LimitList({ budget, onCreateLimit, onEditLimit }: LimitListProps
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Limity budżetowe</Text>
-        <Pressable onPress={onCreateLimit} style={styles.sectionActionButton}>
+        <Pressable
+          accessibilityLabel="Dodaj limit budżetowy"
+          onPress={onCreateLimit}
+          style={styles.sectionActionButton}>
           <Ionicons name="add" size={16} color="#157348" />
           <Text style={styles.sectionAction}>Limit</Text>
         </Pressable>
@@ -77,7 +80,10 @@ export function LimitList({ budget, onCreateLimit, onEditLimit }: LimitListProps
             <Text style={styles.emptyText}>
               Dodaj limit miesięczny do wybranej kategorii w tym budżecie.
             </Text>
-            <Pressable onPress={onCreateLimit} style={styles.emptyButton}>
+            <Pressable
+              accessibilityLabel="Dodaj limit budżetowy"
+              onPress={onCreateLimit}
+              style={styles.emptyButton}>
               <Text style={styles.emptyButtonText}>Dodaj limit</Text>
             </Pressable>
           </View>

@@ -15,7 +15,10 @@ export function CategoryList({ budget, onCreateCategory, onEditCategory }: Categ
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Zawartość budżetu</Text>
-        <Pressable onPress={onCreateCategory} style={styles.sectionActionButton}>
+        <Pressable
+          accessibilityLabel="Dodaj kategorię"
+          onPress={onCreateCategory}
+          style={styles.sectionActionButton}>
           <Ionicons name="add" size={16} color="#157348" />
           <Text style={styles.sectionAction}>Kategoria</Text>
         </Pressable>
@@ -47,7 +50,10 @@ export function CategoryList({ budget, onCreateCategory, onEditCategory }: Categ
             <Text style={styles.emptyText}>
               Dodaj pierwszą kategorię, żeby uporządkować przyszłe transakcje i limity.
             </Text>
-            <Pressable onPress={onCreateCategory} style={styles.emptyButton}>
+            <Pressable
+              accessibilityLabel="Dodaj kategorię"
+              onPress={onCreateCategory}
+              style={styles.emptyButton}>
               <Text style={styles.emptyButtonText}>Dodaj kategorię</Text>
             </Pressable>
           </View>

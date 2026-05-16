@@ -82,7 +82,7 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
 
     return payload as T;
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError('Przekroczono czas oczekiwania na odpowiedź serwera.', 'TIMEOUT');
     }
 

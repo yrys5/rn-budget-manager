@@ -198,7 +198,10 @@ export function LimitFormScreen({
           </View>
 
           <View style={styles.formActions}>
-            <Pressable onPress={onSaveLimit} style={styles.primaryButton}>
+            <Pressable
+              accessibilityLabel={isEditingLimit ? 'Zapisz limit' : 'Dodaj limit'}
+              onPress={onSaveLimit}
+              style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>
                 {isEditingLimit ? 'Zapisz zmiany' : 'Dodaj limit'}
               </Text>

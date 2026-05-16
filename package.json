@@ -10,7 +10,13 @@
     "lint": "expo lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ui": "jest __tests__/ui"
+    "test:ui": "jest __tests__/ui",
+    "test:e2e": "playwright test",
+    "test:e2e:auth": "playwright test e2e/01-auth.spec.ts",
+    "test:e2e:budget": "playwright test e2e/02-budget-setup.spec.ts",
+    "test:e2e:transactions": "playwright test e2e/03-transactions.spec.ts",
+    "test:e2e:goals": "playwright test e2e/04-goals.spec.ts",
+    "test:e2e:family": "playwright test e2e/05-family.spec.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -41,6 +47,7 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",

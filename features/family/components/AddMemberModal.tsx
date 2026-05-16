@@ -101,7 +101,10 @@ export function AddMemberModal({
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
               </View>
 
-              <Pressable onPress={handleAddMember} style={styles.primaryButton}>
+              <Pressable
+                accessibilityLabel="Dodaj do rodziny"
+                onPress={handleAddMember}
+                style={styles.primaryButton}>
                 <Text style={styles.primaryButtonText}>Dodaj do rodziny</Text>
                 <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
               </Pressable>

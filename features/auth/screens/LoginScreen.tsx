@@ -147,7 +147,11 @@ export default function LoginScreen() {
               </View>
             ) : null}
 
-            <Pressable disabled={isLoading} onPress={handleLogin} style={styles.primaryButton}>
+            <Pressable
+              accessibilityLabel="Zaloguj konto"
+              disabled={isLoading}
+              onPress={handleLogin}
+              style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>{isLoading ? 'Logowanie...' : 'Zaloguj się'}</Text>
               <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
             </Pressable>

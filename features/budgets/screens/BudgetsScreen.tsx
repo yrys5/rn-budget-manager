@@ -457,7 +457,10 @@ export default function BudgetsScreen() {
             <Text style={styles.eyebrow}>Budżety</Text>
             <Text style={styles.title}>Zarządzaj planami</Text>
           </View>
-          <Pressable onPress={() => setIsCreateOpen(true)} style={styles.addButton}>
+          <Pressable
+            accessibilityLabel="Dodaj budżet"
+            onPress={() => setIsCreateOpen(true)}
+            style={styles.addButton}>
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </Pressable>
         </View>

@@ -61,7 +61,7 @@ export function GoalList({ budgets, goals, onCreateGoal, onEditGoal }: GoalListP
           <Text style={styles.emptyText}>
             Dodaj pierwszy cel oszczędnościowy przypisany do wybranego budżetu.
           </Text>
-          <Pressable onPress={onCreateGoal} style={styles.emptyButton}>
+          <Pressable accessibilityLabel="Dodaj cel" onPress={onCreateGoal} style={styles.emptyButton}>
             <Text style={styles.emptyButtonText}>Dodaj cel</Text>
           </Pressable>
         </View>

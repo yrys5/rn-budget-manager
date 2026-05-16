@@ -251,7 +251,10 @@ export function GoalFormScreen({
           </View>
 
           <View style={styles.formActions}>
-            <Pressable onPress={onSaveGoal} style={styles.primaryButton}>
+            <Pressable
+              accessibilityLabel={isEditingGoal ? 'Zapisz cel' : 'Dodaj cel'}
+              onPress={onSaveGoal}
+              style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>
                 {isEditingGoal ? 'Zapisz zmiany' : 'Dodaj cel'}
               </Text>

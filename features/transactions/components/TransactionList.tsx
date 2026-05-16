@@ -108,7 +108,10 @@ export function TransactionList({
           <Text style={styles.emptyText}>
             Dodaj pierwszą transakcję przypisaną do budżetu i kategorii.
           </Text>
-          <Pressable onPress={onCreateTransaction} style={styles.emptyButton}>
+          <Pressable
+            accessibilityLabel="Dodaj transakcję"
+            onPress={onCreateTransaction}
+            style={styles.emptyButton}>
             <Text style={styles.emptyButtonText}>Dodaj transakcję</Text>
           </Pressable>
         </View>

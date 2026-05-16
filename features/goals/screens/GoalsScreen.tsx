@@ -236,7 +236,10 @@ export default function GoalsScreen() {
             <Text style={styles.eyebrow}>Cele</Text>
             <Text style={styles.title}>Oszczędności</Text>
           </View>
-          <Pressable onPress={openCreateGoalScreen} style={styles.addButton}>
+          <Pressable
+            accessibilityLabel="Dodaj cel"
+            onPress={openCreateGoalScreen}
+            style={styles.addButton}>
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </Pressable>
         </View>

@@ -244,7 +244,10 @@ export default function TransactionsScreen() {
             <Text style={styles.eyebrow}>Transakcje</Text>
             <Text style={styles.title}>Historia wydatków</Text>
           </View>
-          <Pressable onPress={openCreateTransactionScreen} style={styles.addButton}>
+          <Pressable
+            accessibilityLabel="Dodaj transakcję"
+            onPress={openCreateTransactionScreen}
+            style={styles.addButton}>
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </Pressable>
         </View>

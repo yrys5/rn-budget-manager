@@ -120,7 +120,10 @@ export function CategoryFormScreen({
           </View>
 
           <View style={styles.formActions}>
-            <Pressable onPress={onSaveCategory} style={styles.primaryButton}>
+            <Pressable
+              accessibilityLabel={isEditingCategory ? 'Zapisz kategorię' : 'Dodaj kategorię'}
+              onPress={onSaveCategory}
+              style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>
                 {isEditingCategory ? 'Zapisz zmiany' : 'Dodaj kategorię'}
               </Text>

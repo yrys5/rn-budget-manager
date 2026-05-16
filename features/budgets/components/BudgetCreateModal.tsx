@@ -61,7 +61,10 @@ export function BudgetCreateModal({
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
               </View>
 
-              <Pressable onPress={onCreateBudget} style={styles.primaryButton}>
+              <Pressable
+                accessibilityLabel="Utwórz budżet"
+                onPress={onCreateBudget}
+                style={styles.primaryButton}>
                 <Text style={styles.primaryButtonText}>Utwórz budżet</Text>
                 <Ionicons name="checkmark" size={20} color="#FFFFFF" />
               </Pressable>

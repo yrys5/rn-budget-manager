@@ -27,7 +27,10 @@ export function FamilyMembersList({
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Członkowie rodziny</Text>
-        <Pressable onPress={onAddMember} style={styles.sectionActionButton}>
+        <Pressable
+          accessibilityLabel="Dodaj członka rodziny"
+          onPress={onAddMember}
+          style={styles.sectionActionButton}>
           <Ionicons name="add" size={16} color="#157348" />
           <Text style={styles.sectionAction}>Członek</Text>
         </Pressable>
