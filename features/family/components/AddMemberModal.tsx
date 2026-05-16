@@ -41,21 +41,24 @@ export function AddMemberModal({
   };
 
   const handleAddMember = () => {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedInput = email.trim();
+    const normalizedEmail = normalizedInput.toLowerCase();
     const user = users.find((item) => item.email.toLowerCase() === normalizedEmail);
+    const isEmail = normalizedInput.includes('@');
+    const userId = user?.id ?? normalizedInput;
 
-    if (!normalizedEmail.includes('@')) {
-      setError('Podaj poprawny adres e-mail.');
+    if (!normalizedInput) {
+      setError('Podaj e-mail albo ID użytkownika.');
       return;
     }
 
-    if (!user) {
+    if (isEmail && !user) {
       setError('Nie znaleziono użytkownika z takim adresem e-mail.');
       return;
     }
 
     const isAlreadyMember = members.some(
-      (member) => member.familyId === familyId && member.userId === user.id,
+      (member) => member.familyId === familyId && member.userId === userId,
     );
 
     if (isAlreadyMember) {
@@ -63,7 +66,7 @@ export function AddMemberModal({
       return;
     }
 
-    onAddMember(user.id);
+    onAddMember(userId);
     setEmail('');
     setError('');
   };
@@ -88,7 +91,7 @@ export function AddMemberModal({
               </View>
 
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>E-mail użytkownika</Text>
+                <Text style={styles.label}>E-mail lub ID użytkownika</Text>
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -98,7 +101,7 @@ export function AddMemberModal({
                     setEmail(value);
                     setError('');
                   }}
-                  placeholder="np. anna@example.com"
+                  placeholder="np. anna@example.com lub 2"
                   placeholderTextColor="#8D9994"
                   style={[styles.input, error ? styles.inputError : null]}
                   value={email}

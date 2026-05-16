@@ -7,9 +7,18 @@ export const endpoints = {
   budgets: {
     collection: '/budgets',
     detail: (budgetId: string) => `/budgets/${budgetId}`,
-    category: (budgetId: string, categoryId: string) =>
+    categories: (budgetId: string) => `/budgets/${budgetId}/categories`,
+    categoryDetail: (budgetId: string, categoryId: string) =>
       `/budgets/${budgetId}/categories/${categoryId}`,
-    limit: (budgetId: string, limitId: string) => `/budgets/${budgetId}/limits/${limitId}`,
+    limits: (budgetId: string) => `/budgets/${budgetId}/budget-limits`,
+    limitDetail: (budgetId: string, limitId: string) =>
+      `/budgets/${budgetId}/budget-limits/${limitId}`,
+    transactions: (budgetId: string) => `/budgets/${budgetId}/transactions`,
+    transactionDetail: (budgetId: string, transactionId: string) =>
+      `/budgets/${budgetId}/transactions/${transactionId}`,
+    goals: (budgetId: string) => `/budgets/${budgetId}/savings-goals`,
+    goalDetail: (budgetId: string, goalId: string) =>
+      `/budgets/${budgetId}/savings-goals/${goalId}`,
   },
   dashboard: {
     summary: '/dashboard/summary',
@@ -17,14 +26,7 @@ export const endpoints = {
   families: {
     collection: '/families',
     detail: (familyId: string) => `/families/${familyId}`,
-    member: (familyId: string, memberId: string) => `/families/${familyId}/members/${memberId}`,
-  },
-  goals: {
-    collection: '/goals',
-    detail: (goalId: string) => `/goals/${goalId}`,
-  },
-  transactions: {
-    collection: '/transactions',
-    detail: (transactionId: string) => `/transactions/${transactionId}`,
+    members: (familyId: string) => `/families/${familyId}/members`,
+    memberDetail: (familyId: string, userId: string) => `/families/${familyId}/members/${userId}`,
   },
 } as const;

@@ -100,7 +100,7 @@ export default function BudgetsScreen() {
     }
 
     const nextBudget: Budget = {
-      id: `${Date.now()}`,
+      id: '',
       name: nextName,
       balance: 0,
       spent: 0,
@@ -111,9 +111,9 @@ export default function BudgetsScreen() {
 
     setIsSaving(true);
     try {
-      await budgetsApi.saveBudget(nextBudget);
-      setBudgets((currentBudgets) => [nextBudget, ...currentBudgets]);
-      setActiveBudgetId(nextBudget.id);
+      const savedBudget = await budgetsApi.saveBudget(nextBudget);
+      setBudgets((currentBudgets) => [savedBudget, ...currentBudgets]);
+      setActiveBudgetId(savedBudget.id);
       setBudgetName('');
       setNameError('');
       setIsCreateOpen(false);
@@ -184,7 +184,7 @@ export default function BudgetsScreen() {
     }
 
     const nextCategory: Category = {
-      id: editingCategoryId ?? `${Date.now()}`,
+      id: editingCategoryId ?? '',
       name: nextName,
       type: selectedCategoryType.label,
       icon: selectedCategoryType.icon,
@@ -193,7 +193,7 @@ export default function BudgetsScreen() {
 
     setIsSaving(true);
     try {
-      await budgetsApi.saveCategory(activeBudget.id, nextCategory);
+      const savedCategory = await budgetsApi.saveCategory(activeBudget.id, nextCategory);
       setBudgets((currentBudgets) =>
         currentBudgets.map((budget) => {
           if (budget.id !== activeBudget.id) {
@@ -204,12 +204,12 @@ export default function BudgetsScreen() {
             return {
               ...budget,
               categories: budget.categories.map((category) =>
-                category.id === editingCategoryId ? { ...category, ...nextCategory } : category,
+                category.id === editingCategoryId ? savedCategory : category,
               ),
             };
           }
 
-          return { ...budget, categories: [nextCategory, ...budget.categories] };
+          return { ...budget, categories: [savedCategory, ...budget.categories] };
         }),
       );
       resetCategoryForm();
@@ -304,7 +304,7 @@ export default function BudgetsScreen() {
     }
 
     const nextLimit: BudgetLimit = {
-      id: editingLimitId ?? `${Date.now()}`,
+      id: editingLimitId ?? '',
       limitAmount: normalizedAmount,
       periodYear: normalizedYear,
       periodMonth: limitPeriodMonth,
@@ -316,7 +316,7 @@ export default function BudgetsScreen() {
 
     setIsSaving(true);
     try {
-      await budgetsApi.saveLimit(activeBudget.id, nextLimit);
+      const savedLimit = await budgetsApi.saveLimit(activeBudget.id, nextLimit);
       setBudgets((currentBudgets) =>
         currentBudgets.map((budget) => {
           if (budget.id !== activeBudget.id) {
@@ -327,12 +327,12 @@ export default function BudgetsScreen() {
             return {
               ...budget,
               limits: budget.limits.map((limit) =>
-                limit.id === editingLimitId ? nextLimit : limit,
+                limit.id === editingLimitId ? savedLimit : limit,
               ),
             };
           }
 
-          return { ...budget, limits: [nextLimit, ...budget.limits] };
+          return { ...budget, limits: [savedLimit, ...budget.limits] };
         }),
       );
       resetLimitForm();

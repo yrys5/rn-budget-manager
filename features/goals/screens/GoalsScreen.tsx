@@ -124,7 +124,7 @@ export default function GoalsScreen() {
     }
 
     const nextGoal: SavingsGoal = {
-      id: editingGoalId ?? `${Date.now()}`,
+      id: editingGoalId ?? '',
       name: name.trim(),
       targetAmount: normalizedTargetAmount,
       currentAmount: normalizedCurrentAmount,
@@ -136,13 +136,13 @@ export default function GoalsScreen() {
 
     setIsSaving(true);
     try {
-      await goalsApi.save(nextGoal);
+      const savedGoal = await goalsApi.save(nextGoal);
       setGoals((currentGoals) => {
         if (editingGoalId) {
-          return currentGoals.map((goal) => (goal.id === editingGoalId ? nextGoal : goal));
+          return currentGoals.map((goal) => (goal.id === editingGoalId ? savedGoal : goal));
         }
 
-        return [nextGoal, ...currentGoals];
+        return [savedGoal, ...currentGoals];
       });
       resetGoalForm();
     } finally {
@@ -151,9 +151,11 @@ export default function GoalsScreen() {
   };
 
   const handleDeleteGoal = async (goalId: string) => {
+    const goal = goals.find((item) => item.id === goalId);
+
     setIsSaving(true);
     try {
-      await goalsApi.delete(goalId);
+      await goalsApi.delete(goalId, goal?.budgetId);
       setGoals((currentGoals) => currentGoals.filter((goal) => goal.id !== goalId));
       resetGoalForm();
     } finally {

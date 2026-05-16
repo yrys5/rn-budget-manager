@@ -129,7 +129,7 @@ export default function TransactionsScreen() {
     }
 
     const nextTransaction: Transaction = {
-      id: editingTransactionId ?? `${Date.now()}`,
+      id: editingTransactionId ?? '',
       amount: normalizedAmount,
       description: description.trim(),
       transactionDate,
@@ -142,15 +142,15 @@ export default function TransactionsScreen() {
 
     setIsSaving(true);
     try {
-      await transactionsApi.save(nextTransaction);
+      const savedTransaction = await transactionsApi.save(nextTransaction);
       setTransactions((currentTransactions) => {
         if (editingTransactionId) {
           return currentTransactions.map((transaction) =>
-            transaction.id === editingTransactionId ? nextTransaction : transaction,
+            transaction.id === editingTransactionId ? savedTransaction : transaction,
           );
         }
 
-        return [nextTransaction, ...currentTransactions];
+        return [savedTransaction, ...currentTransactions];
       });
       resetTransactionForm();
     } finally {
@@ -159,9 +159,11 @@ export default function TransactionsScreen() {
   };
 
   const handleDeleteTransaction = async (transactionId: string) => {
+    const transaction = transactions.find((item) => item.id === transactionId);
+
     setIsSaving(true);
     try {
-      await transactionsApi.delete(transactionId);
+      await transactionsApi.delete(transactionId, transaction?.budgetId);
       setTransactions((currentTransactions) =>
         currentTransactions.filter((transaction) => transaction.id !== transactionId),
       );

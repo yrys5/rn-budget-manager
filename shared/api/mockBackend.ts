@@ -112,11 +112,13 @@ export const mockBackend = {
 
   async saveBudget(budget: Budget): Promise<Budget> {
     await wait();
-    budgets = budgets.some((item) => item.id === budget.id)
-      ? budgets.map((item) => (item.id === budget.id ? budget : item))
-      : [budget, ...budgets];
+    const savedBudget = { ...budget, id: budget.id || `budget-${Date.now()}` };
 
-    return clone(budget);
+    budgets = budgets.some((item) => item.id === savedBudget.id)
+      ? budgets.map((item) => (item.id === savedBudget.id ? savedBudget : item))
+      : [savedBudget, ...budgets];
+
+    return clone(savedBudget);
   },
 
   async deleteBudget(budgetId: string): Promise<void> {
@@ -127,19 +129,23 @@ export const mockBackend = {
 
   async saveCategory(budgetId: string, category: Category): Promise<Category> {
     await wait();
+    const savedCategory = { ...category, id: category.id || `category-${Date.now()}` };
+
     budgets = budgets.map((budget) => {
       if (budget.id !== budgetId) {
         return budget;
       }
 
-      const categories = budget.categories.some((item) => item.id === category.id)
-        ? budget.categories.map((item) => (item.id === category.id ? category : item))
-        : [category, ...budget.categories];
+      const categories = budget.categories.some((item) => item.id === savedCategory.id)
+        ? budget.categories.map((item) =>
+            item.id === savedCategory.id ? savedCategory : item,
+          )
+        : [savedCategory, ...budget.categories];
 
       return { ...budget, categories };
     });
 
-    return clone(category);
+    return clone(savedCategory);
   },
 
   async deleteCategory(budgetId: string, categoryId: string): Promise<void> {
@@ -157,19 +163,21 @@ export const mockBackend = {
 
   async saveLimit(budgetId: string, limit: BudgetLimit): Promise<BudgetLimit> {
     await wait();
+    const savedLimit = { ...limit, id: limit.id || `limit-${Date.now()}` };
+
     budgets = budgets.map((budget) => {
       if (budget.id !== budgetId) {
         return budget;
       }
 
-      const limits = budget.limits.some((item) => item.id === limit.id)
-        ? budget.limits.map((item) => (item.id === limit.id ? limit : item))
-        : [limit, ...budget.limits];
+      const limits = budget.limits.some((item) => item.id === savedLimit.id)
+        ? budget.limits.map((item) => (item.id === savedLimit.id ? savedLimit : item))
+        : [savedLimit, ...budget.limits];
 
       return { ...budget, limits };
     });
 
-    return clone(limit);
+    return clone(savedLimit);
   },
 
   async deleteLimit(budgetId: string, limitId: string): Promise<void> {
@@ -188,11 +196,18 @@ export const mockBackend = {
 
   async saveTransaction(transaction: Transaction): Promise<Transaction> {
     await wait();
-    transactions = transactions.some((item) => item.id === transaction.id)
-      ? transactions.map((item) => (item.id === transaction.id ? transaction : item))
-      : [transaction, ...transactions];
+    const savedTransaction = {
+      ...transaction,
+      id: transaction.id || `transaction-${Date.now()}`,
+    };
 
-    return clone(transaction);
+    transactions = transactions.some((item) => item.id === savedTransaction.id)
+      ? transactions.map((item) =>
+          item.id === savedTransaction.id ? savedTransaction : item,
+        )
+      : [savedTransaction, ...transactions];
+
+    return clone(savedTransaction);
   },
 
   async deleteTransaction(transactionId: string): Promise<void> {
@@ -207,11 +222,13 @@ export const mockBackend = {
 
   async saveGoal(goal: SavingsGoal): Promise<SavingsGoal> {
     await wait();
-    goals = goals.some((item) => item.id === goal.id)
-      ? goals.map((item) => (item.id === goal.id ? goal : item))
-      : [goal, ...goals];
+    const savedGoal = { ...goal, id: goal.id || `goal-${Date.now()}` };
 
-    return clone(goal);
+    goals = goals.some((item) => item.id === savedGoal.id)
+      ? goals.map((item) => (item.id === savedGoal.id ? savedGoal : item))
+      : [savedGoal, ...goals];
+
+    return clone(savedGoal);
   },
 
   async deleteGoal(goalId: string): Promise<void> {
@@ -235,26 +252,30 @@ export const mockBackend = {
     ownerUserId?: string;
   }): Promise<{ family: Family; familyBudgets: FamilyBudget[]; member?: FamilyMember }> {
     await wait();
-    const exists = families.some((family) => family.id === input.family.id);
+    const savedFamily = {
+      ...input.family,
+      id: input.family.id || `family-${Date.now()}`,
+    };
+    const exists = families.some((family) => family.id === savedFamily.id);
     families = exists
-      ? families.map((family) => (family.id === input.family.id ? input.family : family))
-      : [input.family, ...families];
+      ? families.map((family) => (family.id === savedFamily.id ? savedFamily : family))
+      : [savedFamily, ...families];
 
     const nextFamilyBudgets = input.budgetIds.map((budgetId) => ({
-      id: `${input.family.id}-${budgetId}`,
-      familyId: input.family.id,
+      id: `${savedFamily.id}-${budgetId}`,
+      familyId: savedFamily.id,
       budgetId,
     }));
 
     familyBudgets = [
       ...nextFamilyBudgets,
-      ...familyBudgets.filter((item) => item.familyId !== input.family.id),
+      ...familyBudgets.filter((item) => item.familyId !== savedFamily.id),
     ];
 
     const member = !exists
       ? {
-          id: `${input.family.id}-${input.ownerUserId ?? currentUserId}`,
-          familyId: input.family.id,
+          id: `${savedFamily.id}-${input.ownerUserId ?? currentUserId}`,
+          familyId: savedFamily.id,
           userId: input.ownerUserId ?? currentUserId,
         }
       : undefined;
@@ -263,7 +284,7 @@ export const mockBackend = {
       familyMembers = [member, ...familyMembers];
     }
 
-    return clone({ family: input.family, familyBudgets: nextFamilyBudgets, member });
+    return clone({ family: savedFamily, familyBudgets: nextFamilyBudgets, member });
   },
 
   async deleteFamily(familyId: string): Promise<void> {
@@ -285,8 +306,10 @@ export const mockBackend = {
     return clone(member);
   },
 
-  async removeFamilyMember(memberId: string): Promise<void> {
+  async removeFamilyMember(familyId: string, userId: string): Promise<void> {
     await wait();
-    familyMembers = familyMembers.filter((member) => member.id !== memberId);
+    familyMembers = familyMembers.filter(
+      (member) => !(member.familyId === familyId && member.userId === userId),
+    );
   },
 };

@@ -8,7 +8,7 @@ type FamilyMembersListProps = {
   familyId: string;
   members: FamilyMember[];
   onAddMember: () => void;
-  onRemoveMember: (memberId: string) => void;
+  onRemoveMember: (userId: string) => void;
   users: User[];
 };
 
@@ -53,7 +53,7 @@ export function FamilyMembersList({
                 </View>
                 <Pressable
                   hitSlop={10}
-                  onPress={() => onRemoveMember(member.id)}
+                  onPress={() => onRemoveMember(member.userId)}
                   style={styles.removeButton}>
                   <Ionicons name="trash-outline" size={18} color="#B73E3E" />
                 </Pressable>

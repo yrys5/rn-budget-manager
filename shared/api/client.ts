@@ -6,7 +6,7 @@ export type ApiState<T> =
   | { status: 'error'; data?: T; error: ApiError };
 
 export type ApiRequestOptions = {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   token?: string;
   timeoutMs?: number;

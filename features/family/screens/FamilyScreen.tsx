@@ -147,14 +147,9 @@ export default function FamilyScreen() {
     }
 
     const nextFamily: Family = {
-      id: `${Date.now()}`,
+      id: '',
       name: nextName,
     };
-    const nextFamilyBudgets = selectedBudgetIds.map((budgetId) => ({
-      id: `${nextFamily.id}-${budgetId}`,
-      familyId: nextFamily.id,
-      budgetId,
-    }));
 
     setIsSaving(true);
     try {
@@ -167,8 +162,11 @@ export default function FamilyScreen() {
       if (result.member) {
         setMembers((currentMembers) => [result.member!, ...currentMembers]);
       }
-      setFamilyBudgets((currentFamilyBudgets) => [...nextFamilyBudgets, ...currentFamilyBudgets]);
-      setActiveFamilyId(nextFamily.id);
+      setFamilyBudgets((currentFamilyBudgets) => [
+        ...result.familyBudgets,
+        ...currentFamilyBudgets,
+      ]);
+      setActiveFamilyId(result.family.id);
       closeFamilyModal();
     } finally {
       setIsSaving(false);
@@ -184,21 +182,39 @@ export default function FamilyScreen() {
     try {
       const member = await familyApi.addMember(activeFamily.id, userId);
       setMembers((currentMembers) => [member, ...currentMembers]);
+      setUsers((currentUsers) =>
+        currentUsers.some((user) => user.id === member.userId)
+          ? currentUsers
+          : [
+              {
+                createdAt: '',
+                email: '',
+                id: member.userId,
+                passwordHash: '',
+                username: `Użytkownik ${member.userId}`,
+              },
+              ...currentUsers,
+            ],
+      );
       setIsAddMemberOpen(false);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleRemoveMember = async (memberId: string) => {
+  const handleRemoveMember = async (userId: string) => {
     if (!activeFamily) {
       return;
     }
 
     setIsSaving(true);
     try {
-      await familyApi.removeMember(activeFamily.id, memberId);
-      setMembers((currentMembers) => currentMembers.filter((member) => member.id !== memberId));
+      await familyApi.removeMember(activeFamily.id, userId);
+      setMembers((currentMembers) =>
+        currentMembers.filter(
+          (member) => !(member.familyId === activeFamily.id && member.userId === userId),
+        ),
+      );
     } finally {
       setIsSaving(false);
     }
