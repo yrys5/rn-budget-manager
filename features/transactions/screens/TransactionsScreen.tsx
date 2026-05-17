@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { budgetsApi } from '@/features/budgets/api/budgetsApi';
 import { transactionsApi } from '../api/transactionsApi';
@@ -34,25 +35,35 @@ export default function TransactionsScreen() {
     }
   }, [state.data]);
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadBudgets = useCallback(async () => {
+    const nextBudgets = await budgetsApi.list();
 
-    const loadBudgets = async () => {
-      const nextBudgets = await budgetsApi.list();
-
-      if (isMounted) {
-        setBudgets(nextBudgets);
-        setSelectedBudgetId((currentId) => currentId || nextBudgets[0]?.id || '');
-        setSelectedCategoryId((currentId) => currentId || nextBudgets[0]?.categories[0]?.id || '');
-      }
-    };
-
-    void loadBudgets();
-
-    return () => {
-      isMounted = false;
-    };
+    setBudgets(nextBudgets);
+    return nextBudgets;
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadBudgets();
+    }, [loadBudgets]),
+  );
+
+  useEffect(() => {
+    setSelectedBudgetId((currentId) =>
+      budgets.some((budget) => budget.id === currentId) ? currentId : budgets[0]?.id || '',
+    );
+  }, [budgets]);
+
+  useEffect(() => {
+    const selectedBudget =
+      budgets.find((budget) => budget.id === selectedBudgetId) ?? budgets[0];
+
+    setSelectedCategoryId((currentId) =>
+      selectedBudget?.categories.some((category) => category.id === currentId)
+        ? currentId
+        : selectedBudget?.categories[0]?.id || '',
+    );
+  }, [budgets, selectedBudgetId]);
 
   const editingTransaction = useMemo(
     () => transactions.find((transaction) => transaction.id === editingTransactionId),
@@ -80,12 +91,15 @@ export default function TransactionsScreen() {
     setTransactionScreenMode(null);
   };
 
-  const openCreateTransactionScreen = () => {
+  const openCreateTransactionScreen = async () => {
+    const nextBudgets = await loadBudgets();
+    const nextBudget = nextBudgets.find((budget) => budget.id === selectedBudgetId) ?? nextBudgets[0];
+
     setAmount('');
     setDescription('');
     setTransactionDate('2026-05-15');
-    setSelectedBudgetId(budgets[0]?.id ?? '');
-    setSelectedCategoryId(budgets[0]?.categories[0]?.id ?? '');
+    setSelectedBudgetId(nextBudget?.id ?? '');
+    setSelectedCategoryId(nextBudget?.categories[0]?.id ?? '');
     setSelectedCurrency('PLN');
     setEditingTransactionId(null);
     setTransactionToDeleteId(null);

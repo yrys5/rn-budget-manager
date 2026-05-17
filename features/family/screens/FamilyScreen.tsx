@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { budgetsApi } from '@/features/budgets/api/budgetsApi';
 import { familyApi } from '../api/familyApi';
@@ -48,23 +49,19 @@ export default function FamilyScreen() {
     }
   }, [state.data]);
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadBudgets = useCallback(async () => {
+    const nextBudgets = await budgetsApi.list();
 
-    const loadBudgets = async () => {
-      const nextBudgets = await budgetsApi.list();
-
-      if (isMounted) {
-        setBudgets(nextBudgets);
-      }
-    };
-
-    void loadBudgets();
-
-    return () => {
-      isMounted = false;
-    };
+    setBudgets(nextBudgets);
+    return nextBudgets;
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+      void loadBudgets();
+    }, [loadBudgets, reload]),
+  );
 
   const activeFamily = useMemo(
     () => families.find((family) => family.id === activeFamilyId) ?? families[0],
@@ -83,9 +80,11 @@ export default function FamilyScreen() {
     setFamilyError('');
   };
 
-  const openCreateFamilyModal = () => {
+  const openCreateFamilyModal = async () => {
+    const nextBudgets = await loadBudgets();
+
     setFamilyName('');
-    setSelectedBudgetIds(budgets[0] ? [budgets[0].id] : []);
+    setSelectedBudgetIds(nextBudgets[0] ? [nextBudgets[0].id] : []);
     setFamilyError('');
     setFamilyScreenMode('create');
   };

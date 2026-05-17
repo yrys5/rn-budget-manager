@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { budgetsApi } from '@/features/budgets/api/budgetsApi';
 import { goalsApi } from '../api/goalsApi';
@@ -35,24 +36,25 @@ export default function GoalsScreen() {
     }
   }, [state.data]);
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadBudgets = useCallback(async () => {
+    const nextBudgets = await budgetsApi.list();
 
-    const loadBudgets = async () => {
-      const nextBudgets = await budgetsApi.list();
-
-      if (isMounted) {
-        setBudgets(nextBudgets);
-        setSelectedBudgetId((currentId) => currentId || nextBudgets[0]?.id || '');
-      }
-    };
-
-    void loadBudgets();
-
-    return () => {
-      isMounted = false;
-    };
+    setBudgets(nextBudgets);
+    return nextBudgets;
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+      void loadBudgets();
+    }, [loadBudgets, reload]),
+  );
+
+  useEffect(() => {
+    setSelectedBudgetId((currentId) =>
+      budgets.some((budget) => budget.id === currentId) ? currentId : budgets[0]?.id || '',
+    );
+  }, [budgets]);
 
   const editingGoal = useMemo(
     () => goals.find((goal) => goal.id === editingGoalId),
@@ -78,13 +80,17 @@ export default function GoalsScreen() {
     setGoalScreenMode(null);
   };
 
-  const openCreateGoalScreen = () => {
+  const openCreateGoalScreen = async () => {
+    const nextBudgets = await loadBudgets();
+    const nextBudget =
+      nextBudgets.find((budget) => budget.id === selectedBudgetId) ?? nextBudgets[0];
+
     setName('');
     setTargetAmount('');
     setCurrentAmount('');
     setStartDate('2026-05-15');
     setTargetDate('2026-12-31');
-    setSelectedBudgetId(budgets[0]?.id ?? '');
+    setSelectedBudgetId(nextBudget?.id ?? '');
     setSelectedCurrency('PLN');
     setEditingGoalId(null);
     setGoalToDeleteId(null);

@@ -101,8 +101,8 @@ export const loginExistingUser = async (
 ) => {
   await page.goto('/login');
   await expect(page.getByPlaceholder('Wpisz hasło')).toBeVisible();
-  await page.getByRole('textbox', { name: 'twoj@email.com' }).fill(credentials.email);
-  await page.getByRole('textbox', { name: 'Wpisz hasło' }).fill(credentials.password);
+  await page.locator('input').nth(0).fill(credentials.email);
+  await page.locator('input').nth(1).fill(credentials.password);
 
   const [loginResponse] = await Promise.all([
     page.waitForResponse((response) =>

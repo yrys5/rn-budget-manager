@@ -283,6 +283,28 @@ const normalizeFamilyMember = (value: unknown, familyId: string): FamilyMember =
   };
 };
 
+const normalizeFamilyBudget = (value: unknown, familyId: string): FamilyBudget | null => {
+  const source = isRecord(value) ? value : {};
+  const embeddedBudget = isRecord(readValue(source, ['budget']))
+    ? (readValue(source, ['budget']) as ApiRecord)
+    : undefined;
+  const budgetId = readString(
+    source,
+    ['budgetId', 'id'],
+    readString(embeddedBudget ?? {}, ['id', 'budgetId']),
+  );
+
+  if (!budgetId) {
+    return null;
+  }
+
+  return {
+    budgetId,
+    familyId: readString(source, ['familyId'], familyId),
+    id: readString(source, ['id', 'familyBudgetId'], `${familyId}-${budgetId}`),
+  };
+};
+
 const getFamilyMembersFromPayload = (familyPayload: unknown, familyId: string) => {
   const source = isRecord(familyPayload) ? familyPayload : {};
 
@@ -290,6 +312,21 @@ const getFamilyMembersFromPayload = (familyPayload: unknown, familyId: string) =
     normalizeFamilyMember(member, familyId),
   );
 };
+
+const getFamilyBudgetsFromPayload = (familyPayload: unknown, familyId: string) => {
+  const source = isRecord(familyPayload) ? familyPayload : {};
+
+  return unwrapList(readValue(source, ['budgets', 'familyBudgets']))
+    .map((budget) => normalizeFamilyBudget(budget, familyId))
+    .filter((familyBudget): familyBudget is FamilyBudget => Boolean(familyBudget));
+};
+
+const createFamilyBudgets = (familyId: string, budgetIds: string[]): FamilyBudget[] =>
+  budgetIds.map((budgetId) => ({
+    budgetId,
+    familyId,
+    id: `${familyId}-${budgetId}`,
+  }));
 
 const getUsersFromFamilyPayload = (familyPayload: unknown) => {
   const source = isRecord(familyPayload) ? familyPayload : {};
@@ -548,6 +585,9 @@ const httpBackend = {
     const response = await apiRequest<unknown>(endpoints.families.collection);
     const familyPayloads = unwrapList(response, ['families']);
     const families = familyPayloads.map((familyPayload) => normalizeFamily(familyPayload));
+    const familyBudgets = familyPayloads.flatMap((familyPayload, index) =>
+      getFamilyBudgetsFromPayload(familyPayload, families[index]?.id ?? ''),
+    );
     const embeddedMembers = familyPayloads.flatMap((familyPayload, index) =>
       getFamilyMembersFromPayload(familyPayload, families[index]?.id ?? ''),
     );
@@ -573,7 +613,7 @@ const httpBackend = {
     }));
     const users = uniqueUsers([...fallbackUsers, ...embeddedUsers]);
 
-    return { families, familyBudgets: [], members, users };
+    return { families, familyBudgets, members, users };
   },
   async saveFamily(input: {
     family: Family;
@@ -584,8 +624,15 @@ const httpBackend = {
       input.family.id ? endpoints.families.detail(input.family.id) : endpoints.families.collection,
       { body: { name: input.family.name }, method: input.family.id ? 'PUT' : 'POST' },
     );
+    const family = normalizeFamily(response, input.family);
+    const familyBudgets = getFamilyBudgetsFromPayload(response, family.id);
 
-    return { family: normalizeFamily(response, input.family), familyBudgets: [] };
+    return {
+      family,
+      familyBudgets: familyBudgets.length
+        ? familyBudgets
+        : createFamilyBudgets(family.id, input.budgetIds),
+    };
   },
   deleteFamily: (familyId: string) =>
     apiRequest<void>(endpoints.families.detail(familyId), { method: 'DELETE' }),
