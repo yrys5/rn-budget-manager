@@ -49,3 +49,10 @@ npm run test:ui
 - `shared/model` - wspólne typy domenowe oraz hook ładowania zasobów
 - `shared/ui` - ujednolicone komponenty stanu, przycisków, pól formularzy i dialogów
 - `shared/testing` - dane demo używane wyłącznie przez mock backend i testy
+
+uruchomienie testów E2E:
+- npm run test:e2e:auth
+- npm run test:e2e:budget
+- npm run test:e2e:transactions
+- npm run test:e2e:goals
+- npm run test:e2e:family
